@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  shared_preferences: ^2.2.2  # 用于本地存储
   # UI Components
   cupertino_icons: ^1.0.6
 

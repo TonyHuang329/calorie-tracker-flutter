@@ -261,6 +261,9 @@ class DatabaseService {
   }
 
   // 获取营养成分统计
+  // 在 database_service.dart 中替换 getNutritionStatistics 方法
+
+// 获取营养成分统计
   static Future<NutritionStats> getNutritionStatistics(DateTime date) async {
     final db = await database;
     final dateString = _formatDate(date);
@@ -276,41 +279,29 @@ class DatabaseService {
     double totalFat = 0;
     double totalCalories = 0;
 
-    // 注意：这里需要根据实际的营养数据计算
-    // 目前数据库中没有存储营养信息，所以返回基础数据
+    // 根据实际食物数据计算营养成分
     for (var record in records) {
       totalCalories += record['totalCalories'] as double;
-      // 这里可以根据食物类型估算营养成分
       final quantity = record['quantity'] as double;
       final category = record['foodCategory'] as String;
+      final foodName = record['foodName'] as String;
 
-      // 根据食物类别估算营养成分（简化版本）
-      switch (category) {
-        case '蛋白质':
-          totalProtein += quantity * 20; // 估算每100g含20g蛋白质
-          totalCarbs += quantity * 2;
-          totalFat += quantity * 5;
-          break;
-        case '主食':
-          totalProtein += quantity * 3;
-          totalCarbs += quantity * 60;
-          totalFat += quantity * 1;
-          break;
-        case '蔬菜':
-          totalProtein += quantity * 2;
-          totalCarbs += quantity * 8;
-          totalFat += quantity * 0.5;
-          break;
-        case '水果':
-          totalProtein += quantity * 1;
-          totalCarbs += quantity * 15;
-          totalFat += quantity * 0.3;
-          break;
-        default:
-          totalProtein += quantity * 5;
-          totalCarbs += quantity * 20;
-          totalFat += quantity * 5;
+      // 根据食物类别和名称更精确地估算营养成分（每100g的营养成分）
+      Map<String, double> nutritionPer100g =
+          _getNutritionDataPer100g(foodName, category);
+
+      // 计算实际营养成分（根据实际食用量）
+      double actualQuantity = quantity;
+
+      // 如果单位是ml，按照密度换算（简化处理，大部分液体密度接近1）
+      if (record['foodUnit'] == 'ml') {
+        actualQuantity = quantity; // ml和g近似相等
       }
+
+      // 按比例计算营养成分
+      totalProtein += (nutritionPer100g['protein']! * actualQuantity / 100);
+      totalCarbs += (nutritionPer100g['carbs']! * actualQuantity / 100);
+      totalFat += (nutritionPer100g['fat']! * actualQuantity / 100);
     }
 
     return NutritionStats(
@@ -320,6 +311,54 @@ class DatabaseService {
       totalFat: totalFat,
       date: date,
     );
+  }
+
+// 获取食物的营养数据（每100g）
+  static Map<String, double> _getNutritionDataPer100g(
+      String foodName, String category) {
+    // 具体食物的营养数据
+    final specificFoodData = {
+      '米饭': {'protein': 2.7, 'carbs': 28.0, 'fat': 0.3},
+      '面条': {'protein': 11.0, 'carbs': 55.0, 'fat': 1.1},
+      '面包': {'protein': 8.5, 'carbs': 58.0, 'fat': 5.1},
+      '鸡胸肉': {'protein': 31.0, 'carbs': 0.0, 'fat': 3.6},
+      '鸡蛋': {'protein': 13.0, 'carbs': 1.1, 'fat': 11.0},
+      '牛肉': {'protein': 26.0, 'carbs': 0.0, 'fat': 17.0},
+      '鱼肉': {'protein': 22.0, 'carbs': 0.0, 'fat': 12.0},
+      '西兰花': {'protein': 3.0, 'carbs': 5.0, 'fat': 0.3},
+      '胡萝卜': {'protein': 0.9, 'carbs': 10.0, 'fat': 0.2},
+      '番茄': {'protein': 0.9, 'carbs': 3.9, 'fat': 0.2},
+      '苹果': {'protein': 0.3, 'carbs': 14.0, 'fat': 0.2},
+      '香蕉': {'protein': 1.1, 'carbs': 23.0, 'fat': 0.3},
+      '橙子': {'protein': 0.9, 'carbs': 12.0, 'fat': 0.1},
+      '薯片': {'protein': 7.0, 'carbs': 53.0, 'fat': 32.0},
+      '巧克力': {'protein': 4.9, 'carbs': 61.0, 'fat': 31.0},
+      '牛奶': {'protein': 3.4, 'carbs': 5.0, 'fat': 1.0},
+      '可乐': {'protein': 0.0, 'carbs': 10.6, 'fat': 0.0},
+    };
+
+    // 如果有具体食物数据，使用具体数据
+    if (specificFoodData.containsKey(foodName)) {
+      return specificFoodData[foodName]!;
+    }
+
+    // 否则根据食物类别估算（每100g的营养成分）
+    switch (category) {
+      case '蛋白质':
+        return {'protein': 25.0, 'carbs': 2.0, 'fat': 8.0};
+      case '主食':
+        return {'protein': 8.0, 'carbs': 75.0, 'fat': 2.0};
+      case '蔬菜':
+        return {'protein': 2.5, 'carbs': 6.0, 'fat': 0.5};
+      case '水果':
+        return {'protein': 1.0, 'carbs': 15.0, 'fat': 0.3};
+      case '零食':
+        return {'protein': 5.0, 'carbs': 50.0, 'fat': 25.0};
+      case '饮品':
+        return {'protein': 1.0, 'carbs': 8.0, 'fat': 0.5};
+      default:
+        return {'protein': 10.0, 'carbs': 30.0, 'fat': 10.0};
+    }
   }
 
   // 获取最常吃的食物

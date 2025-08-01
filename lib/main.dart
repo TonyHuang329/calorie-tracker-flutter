@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'models/user_profile.dart';
 import 'models/food_item.dart';
+import 'models/food_recommendation.dart';
 import 'services/calorie_calculator.dart';
 import 'services/database_service.dart';
+import 'services/food_database.dart';
+import 'services/food_recommendation_service.dart';
 import 'screens/add_food_screen.dart';
 import 'screens/profile_settings_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/nutrition_overview_screen.dart';
-import 'screens/camera_food_screen.dart';
-import 'screens/smart_analysis_test_screen.dart';
 import 'widgets/circular_calorie_progress.dart';
+import 'services/quick_add_service.dart';
+import 'screens/quick_add_screen.dart';
 
 void main() {
   runApp(const CalorieTrackerApp());
@@ -47,6 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
   UserProfile? currentUser;
   List<FoodRecord> todayFoodRecords = [];
   bool isLoading = true;
+
+  // 推荐相关变量
+  List<String> _quickRecommendations = [];
+  bool _isLoadingRecommendations = false;
 
   @override
   void initState() {
@@ -104,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initializeApp() async {
     await _loadUserData();
     await _loadTodayFoodRecords();
+    _loadQuickRecommendations();
   }
 
   // 加载用户数据
@@ -155,6 +163,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // 加载快速推荐
+  Future<void> _loadQuickRecommendations() async {
+    if (currentUser == null) return;
+
+    setState(() => _isLoadingRecommendations = true);
+
+    try {
+      final recommendations = await FoodRecommendationService.instance
+          .getQuickRecommendations(currentUser!);
+
+      if (mounted) {
+        setState(() {
+          _quickRecommendations = recommendations;
+          _isLoadingRecommendations = false;
+        });
+      }
+    } catch (e) {
+      print('加载快速推荐失败: $e');
+      if (mounted) {
+        setState(() => _isLoadingRecommendations = false);
+      }
+    }
+  }
+
   // 添加食物记录
   Future<void> _addFoodRecord(FoodRecord record) async {
     try {
@@ -164,6 +196,8 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => todayFoodRecords.add(record));
         _showSuccessMessage(
             '添加了 ${record.foodItem?.name} (${record.totalCalories.round()} 卡路里)');
+        // 重新加载推荐
+        _loadQuickRecommendations();
       }
     } catch (e) {
       _handleError('保存食物记录失败', e);
@@ -182,6 +216,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => todayFoodRecords.removeAt(index));
         _showInfoMessage('已删除食物记录');
+        // 重新加载推荐
+        _loadQuickRecommendations();
       }
     } catch (e) {
       _handleError('删除食物记录失败', e);
@@ -196,9 +232,39 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => currentUser = newProfile);
         _showSuccessMessage('个人资料已保存');
+        // 重新加载推荐
+        _loadQuickRecommendations();
       }
     } catch (e) {
       _handleError('保存用户资料失败', e);
+    }
+  }
+
+  // 快速添加推荐食物
+  void _quickAddRecommendedFood(String foodName) {
+    try {
+      // 从食物数据库找到对应食物
+      final allFoods = FoodDatabaseService.getAllFoods();
+      final food = allFoods.firstWhere(
+        (f) => f.name == foodName,
+        orElse: () => throw Exception('未找到食物: $foodName'),
+      );
+
+      final quantity = FoodDatabaseService.getRecommendedServing(food);
+      final totalCalories =
+          FoodDatabaseService.calculateCalories(food, quantity);
+
+      final record = FoodRecord(
+        foodItemId: food.id ?? 0,
+        foodItem: food,
+        quantity: quantity,
+        totalCalories: totalCalories,
+        mealType: _getMealTypeFromTime(),
+      );
+
+      _addFoodRecord(record);
+    } catch (e) {
+      _showErrorMessage('添加失败：${e.toString()}');
     }
   }
 
@@ -244,25 +310,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-  }
-
-  void _navigateToAICamera() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CameraFoodScreen(
-          onFoodAdded: _addFoodRecord,
-          mealType: _getMealTypeFromTime(),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToSmartAnalysisTest() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SmartAnalysisTestScreen(),
-      ),
-    );
   }
 
   // 根据时间智能选择餐次
@@ -334,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           setState(() => todayFoodRecords.clear());
           _showInfoMessage('所有数据已清除');
+          _loadQuickRecommendations();
         }
       } catch (e) {
         _handleError('清除数据失败', e);
@@ -376,6 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           await _loadTodayFoodRecords();
+          _loadQuickRecommendations();
         },
         child: ListView(
           padding: const EdgeInsets.all(16.0),
@@ -388,6 +437,11 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             _buildQuickStatsCard(targetCalories, nutritionSummary),
             const SizedBox(height: 20),
+
+            // 新增：智能推荐卡片
+            _buildQuickRecommendationCard(),
+            const SizedBox(height: 20),
+
             if (todayFoodRecords.isNotEmpty) ...[
               _buildTodayFoodCard(),
               const SizedBox(height: 20),
@@ -625,6 +679,209 @@ class _HomeScreenState extends State<HomeScreen> {
               currentCalories: currentCalorieIntake,
               targetCalories: targetCalories,
               size: 220,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 新增：智能推荐卡片
+  Widget _buildQuickRecommendationCard() {
+    if (_quickRecommendations.isEmpty && !_isLoadingRecommendations) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.purple.shade50, Colors.pink.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.psychology,
+                    color: Colors.purple.shade600,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '🤖 AI智能推荐',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple.shade700,
+                                ),
+                      ),
+                      Text(
+                        '基于您的饮食习惯和当前时间',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: _loadQuickRecommendations,
+                  icon: Icon(
+                    Icons.refresh,
+                    color: Colors.purple.shade600,
+                  ),
+                  tooltip: '刷新推荐',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (_isLoadingRecommendations)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 12),
+                      Text('AI正在分析您的需求...'),
+                    ],
+                  ),
+                ),
+              )
+            else if (_quickRecommendations.isNotEmpty) ...[
+              Text(
+                '为您推荐以下食物：',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _quickRecommendations
+                    .map(
+                      (foodName) => _buildRecommendationChip(foodName),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: TextButton.icon(
+                  onPressed: _navigateToAddFood,
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('查看更多推荐'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.purple.shade600,
+                  ),
+                ),
+              ),
+            ] else ...[
+              Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      size: 32,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '暂无推荐',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '多记录一些饮食，推荐会更准确',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecommendationChip(String foodName) {
+    return GestureDetector(
+      onTap: () => _quickAddRecommendedFood(foodName),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.purple.shade100, Colors.pink.shade100],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.purple.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purple.shade100.withOpacity(0.5),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              foodName,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.purple.shade700,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade600,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                size: 12,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
@@ -918,6 +1175,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // 在 main.dart 中修改 _buildQuickActionsCard 方法
+
   Widget _buildQuickActionsCard() {
     return Card(
       elevation: 2,
@@ -949,10 +1208,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   _navigateToAddFood,
                 ),
                 _buildActionTile(
-                  'AI识别',
-                  Icons.camera_alt,
-                  Colors.purple,
-                  _navigateToAICamera,
+                  '快速添加', // 新功能，替代AI识别
+                  Icons.flash_on,
+                  Colors.orange,
+                  _navigateToQuickAdd,
                 ),
                 _buildActionTile(
                   '营养分析',
@@ -963,13 +1222,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildActionTile(
                   '查看历史',
                   Icons.history,
-                  Colors.orange,
+                  Colors.purple,
                   _navigateToHistory,
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+// 添加快速添加导航方法
+  void _navigateToQuickAdd() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => QuickAddScreen(onFoodAdded: _addFoodRecord),
       ),
     );
   }
@@ -1021,7 +1289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
             ),
             const SizedBox(height: 12),
-            // 原有的个人设置
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
@@ -1035,21 +1302,6 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: const Text('修改个人信息和目标'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: _navigateToSettings,
-            ),
-            // 新增的智能分析测试
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.psychology, color: Colors.purple.shade700),
-              ),
-              title: const Text('智能分析测试'),
-              subtitle: const Text('测试图像分析功能'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _navigateToSmartAnalysisTest,
             ),
           ],
         ),
