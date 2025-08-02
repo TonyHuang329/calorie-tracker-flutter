@@ -1,4 +1,4 @@
-// // lib/screens/smart_analysis_test_screen.dart
+﻿// // lib/screens/smart_analysis_test_screen.dart
 // import 'dart:io';
 // import 'package:flutter/material.dart';
 // import 'package:image_picker/image_picker.dart';
@@ -483,17 +483,17 @@
 
 //   Color _getCategoryColor(String category) {
 //     switch (category) {
-//       case '水果':
+//       case 'Fruits':
 //         return Colors.red;
-//       case '蔬菜':
+//       case 'Vegetables':
 //         return Colors.green;
-//       case '主食':
+//       case 'Staple Food':
 //         return Colors.orange;
-//       case '蛋白质':
+//       case 'Protein':
 //         return Colors.purple;
-//       case '零食':
+//       case 'Snacks':
 //         return Colors.brown;
-//       case '饮品':
+//       case 'Beverages':
 //         return Colors.blue;
 //       default:
 //         return Colors.grey;
@@ -532,3 +532,4 @@
 //     return names[texture] ?? texture;
 //   }
 // }
+

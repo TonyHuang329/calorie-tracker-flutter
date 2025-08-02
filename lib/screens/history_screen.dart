@@ -1,4 +1,4 @@
-// lib/screens/history_screen.dart
+﻿// lib/screens/history_screen.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/food_item.dart';
@@ -67,7 +67,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('历史记录'),
+        title: const Text('History Records'),
         backgroundColor: Colors.blue.shade50,
         elevation: 0,
         actions: [
@@ -559,10 +559,10 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   Widget _buildMealLegend() {
     final mealNames = {
-      'breakfast': '早餐',
-      'lunch': '午餐',
-      'dinner': '晚餐',
-      'snack': '零食',
+      'breakfast': 'Breakfast',
+      'lunch': 'Lunch',
+      'dinner': 'Dinner',
+      'snack': 'Snacks',
     };
     final colors = {
       'breakfast': Colors.orange,
@@ -929,7 +929,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                 _buildMealInfo(
                     '晚', dayData.mealBreakdown['dinner'] ?? 0, Colors.blue),
                 _buildMealInfo(
-                    '零食', dayData.mealBreakdown['snack'] ?? 0, Colors.purple),
+                    'Snacks', dayData.mealBreakdown['snack'] ?? 0, Colors.purple),
               ],
             ),
           ],
@@ -1052,17 +1052,17 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case '主食':
+      case 'Staple Food':
         return Colors.orange;
-      case '蛋白质':
+      case 'Protein':
         return Colors.red;
-      case '蔬菜':
+      case 'Vegetables':
         return Colors.green;
-      case '水果':
+      case 'Fruits':
         return Colors.purple;
-      case '零食':
+      case 'Snacks':
         return Colors.brown;
-      case '饮品':
+      case 'Beverages':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -1103,3 +1103,4 @@ class _HistoryScreenState extends State<HistoryScreen>
     return Colors.red;
   }
 }
+

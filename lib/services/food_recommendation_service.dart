@@ -1,4 +1,4 @@
-// lib/services/food_recommendation_service.dart
+﻿// lib/services/food_recommendation_service.dart
 import '../models/food_item.dart';
 import '../models/food_recommendation.dart';
 import '../models/user_profile.dart';
@@ -56,7 +56,7 @@ class FoodRecommendationService {
     final allFoods = FoodDatabaseService.getAllFoods();
     List<FoodRecommendation> recommendations = [];
 
-    // 根据餐次确定理想卡路里范围
+    // 根据餐次Confirm理想卡路里范围
     double idealCalories =
         _getIdealCaloriesForMeal(remainingCalories, mealType);
     print('$mealType 理想卡路里: ${idealCalories.round()} kcal');
@@ -97,7 +97,7 @@ class FoodRecommendationService {
     List<FoodRecommendation> recommendations = [];
 
     if (userHistory.isEmpty) {
-      print('没有历史记录，跳过偏好推荐');
+      print('没有History Records，跳过偏好推荐');
       return recommendations;
     }
 
@@ -164,50 +164,50 @@ class FoodRecommendationService {
       // 根据餐次推荐不同类型的食物
       switch (mealType) {
         case 'breakfast':
-          if (food.category == '蛋白质' || food.category == '主食') {
+          if (food.category == 'Protein' || food.category == 'Staple Food') {
             score = 0.7;
-            reason = '早餐营养搭配';
-            tags = ['早餐推荐', '营养均衡'];
-          } else if (food.category == '水果') {
+            reason = 'Breakfast营养搭配';
+            tags = ['Breakfast推荐', '营养均衡'];
+          } else if (food.category == 'Fruits') {
             score = 0.5;
-            reason = '早餐水果';
-            tags = ['早餐推荐', '维生素'];
+            reason = 'BreakfastFruits';
+            tags = ['Breakfast推荐', '维生素'];
           }
           break;
 
         case 'lunch':
-          if (food.category == '蛋白质' || food.category == '蔬菜') {
+          if (food.category == 'Protein' || food.category == 'Vegetables') {
             score = 0.6;
-            reason = '午餐均衡营养';
-            tags = ['午餐推荐', '营养搭配'];
-          } else if (food.category == '主食') {
+            reason = 'Lunch均衡营养';
+            tags = ['Lunch推荐', '营养搭配'];
+          } else if (food.category == 'Staple Food') {
             score = 0.5;
-            reason = '午餐主食';
-            tags = ['午餐推荐', '能量补充'];
+            reason = 'LunchStaple Food';
+            tags = ['Lunch推荐', '能量补充'];
           }
           break;
 
         case 'dinner':
-          if (food.category == '蔬菜') {
+          if (food.category == 'Vegetables') {
             score = 0.7;
-            reason = '晚餐清淡健康';
-            tags = ['晚餐推荐', '清淡饮食'];
-          } else if (food.category == '蛋白质' && currentHour < 19) {
+            reason = 'Dinner清淡健康';
+            tags = ['Dinner推荐', '清淡饮食'];
+          } else if (food.category == 'Protein' && currentHour < 19) {
             score = 0.5;
-            reason = '适量蛋白质';
-            tags = ['晚餐推荐', '适量摄入'];
+            reason = '适量Protein';
+            tags = ['Dinner推荐', '适量摄入'];
           }
           break;
 
         case 'snack':
-          if (food.category == '水果') {
+          if (food.category == 'Fruits') {
             score = 0.6;
-            reason = '健康零食';
-            tags = ['零食推荐', '天然食品'];
+            reason = '健康Snacks';
+            tags = ['Snacks推荐', '天然食品'];
           } else if (food.name.contains('坚果') || food.name.contains('酸奶')) {
             score = 0.5;
-            reason = '营养零食';
-            tags = ['零食推荐', '营养补充'];
+            reason = '营养Snacks';
+            tags = ['Snacks推荐', '营养补充'];
           }
           break;
       }
@@ -306,3 +306,4 @@ class FoodRecommendationService {
     return 'snack';
   }
 }
+

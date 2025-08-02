@@ -1,4 +1,4 @@
-// lib/services/quick_add_service.dart
+﻿// lib/services/quick_add_service.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/food_item.dart';
@@ -16,15 +16,15 @@ class QuickAddService {
 
   // ===== 收藏夹功能 =====
 
-  // 添加到收藏夹
+  // Add到收藏夹
   Future<void> addToFavorites(String foodName) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> favorites = prefs.getStringList(_favoritesKey) ?? [];
 
     if (!favorites.contains(foodName)) {
-      favorites.insert(0, foodName); // 添加到开头
+      favorites.insert(0, foodName); // Add到开头
       if (favorites.length > 20) {
-        // 最多保存20个
+        // 最多Save20个
         favorites = favorites.take(20).toList();
       }
       await prefs.setStringList(_favoritesKey, favorites);
@@ -51,9 +51,9 @@ class QuickAddService {
     return favorites.contains(foodName);
   }
 
-  // ===== 最近添加功能 =====
+  // ===== 最近Add功能 =====
 
-  // 获取最近添加的食物
+  // 获取最近Add的食物
   Future<List<String>> getRecentFoods({int days = 7}) async {
     try {
       final records = await DatabaseService.getRecentFoodRecords();
@@ -95,9 +95,9 @@ class QuickAddService {
     }
   }
 
-  // ===== 智能搜索功能 =====
+  // ===== 智能Search功能 =====
 
-  // 智能搜索食物
+  // 智能Search食物
   List<FoodItem> smartSearch(String query, List<FoodItem> allFoods) {
     if (query.isEmpty) return allFoods;
 
@@ -118,7 +118,7 @@ class QuickAddService {
     return results.map((r) => r.food).toList();
   }
 
-  // 计算搜索评分
+  // 计算Search评分
   int _calculateSearchScore(FoodItem food, String query) {
     String foodName = food.name.toLowerCase();
     String category = food.category.toLowerCase();
@@ -148,27 +148,27 @@ class QuickAddService {
   bool _pinyinMatch(String foodName, String query) {
     // 常用食物的拼音首字母映射
     Map<String, List<String>> pinyinMap = {
-      '苹果': ['pg', 'pingguo'],
-      '香蕉': ['xj', 'xiangjiao'],
-      '米饭': ['mf', 'mifan'],
-      '鸡蛋': ['jd', 'jidan'],
-      '牛肉': ['nr', 'niurou'],
-      '鸡胸肉': ['jxr', 'jixiongrou'],
-      '西兰花': ['xlh', 'xilanhua'],
-      '番茄': ['fq', 'fanqie'],
-      '胡萝卜': ['hlb', 'huluobo'],
-      '面条': ['mt', 'miantiao'],
-      '面包': ['mb', 'mianbao'],
-      '鱼肉': ['yr', 'yurou'],
+      'Apple': ['pg', 'pingguo'],
+      'Banana': ['xj', 'xiangjiao'],
+      'Rice': ['mf', 'mifan'],
+      'Egg': ['jd', 'jidan'],
+      'Beef': ['nr', 'niurou'],
+      'Chicken Breast': ['jxr', 'jixiongrou'],
+      'Broccoli': ['xlh', 'xilanhua'],
+      'Tomato': ['fq', 'fanqie'],
+      'Carrot': ['hlb', 'huluobo'],
+      'Noodles': ['mt', 'miantiao'],
+      'Bread': ['mb', 'mianbao'],
+      'Fish': ['yr', 'yurou'],
       '西瓜': ['xg', 'xigua'],
-      '橙子': ['cz', 'chengzi'],
+      'Orange': ['cz', 'chengzi'],
       '葡萄': ['pt', 'putao'],
       '草莓': ['cm', 'caomei'],
       '猪肉': ['zr', 'zhurou'],
       '土豆': ['td', 'tudou'],
       '白菜': ['bc', 'baicai'],
       '菠菜': ['bc', 'bocai'],
-      '牛奶': ['nn', 'niunai'],
+      'Milk': ['nn', 'niunai'],
     };
 
     List<String>? pinyins = pinyinMap[foodName];
@@ -196,7 +196,7 @@ class QuickAddService {
 
   // ===== 餐次模板功能 =====
 
-  // 保存餐次模板
+  // Save餐次模板
   Future<void> saveMealTemplate(
       String templateName, List<FoodRecord> foods) async {
     final prefs = await SharedPreferences.getInstance();
@@ -219,7 +219,7 @@ class QuickAddService {
     // 获取现有模板键
     List<String> templateKeys = prefs.getStringList(_templateKeysKey) ?? [];
 
-    // 保存新模板
+    // Save新模板
     String templateKey = 'meal_template_$templateName';
     await prefs.setString(templateKey, jsonEncode(template));
 
@@ -254,7 +254,7 @@ class QuickAddService {
     return templates;
   }
 
-  // 删除餐次模板
+  // Delete餐次模板
   Future<void> deleteMealTemplate(String templateName) async {
     final prefs = await SharedPreferences.getInstance();
     String templateKey = 'meal_template_$templateName';
@@ -315,25 +315,25 @@ class QuickAddService {
   List<double> getQuantitySuggestions(FoodItem food) {
     // 根据食物类别返回常用数量
     switch (food.category) {
-      case '主食':
-        return [100, 150, 200, 250]; // 主食量较大
-      case '蛋白质':
-        return [50, 100, 150, 200]; // 蛋白质适中
-      case '蔬菜':
-        return [100, 200, 300, 400]; // 蔬菜可以多吃
-      case '水果':
-        return [100, 150, 200, 250]; // 水果适中
-      case '零食':
-        return [20, 30, 50, 100]; // 零食要少
-      case '饮品':
-        return [200, 250, 300, 500]; // 饮品以ml计
+      case 'Staple Food':
+        return [100, 150, 200, 250]; // Staple Food量较大
+      case 'Protein':
+        return [50, 100, 150, 200]; // Protein适中
+      case 'Vegetables':
+        return [100, 200, 300, 400]; // Vegetables可以多吃
+      case 'Fruits':
+        return [100, 150, 200, 250]; // Fruits适中
+      case 'Snacks':
+        return [20, 30, 50, 100]; // Snacks要少
+      case 'Beverages':
+        return [200, 250, 300, 500]; // Beverages以ml计
       default:
         return [50, 100, 150, 200];
     }
   }
 }
 
-// 搜索结果辅助类
+// Search结果辅助类
 class _SearchResult {
   final FoodItem food;
   final int score;
@@ -374,3 +374,4 @@ class MealTemplate {
     };
   }
 }
+

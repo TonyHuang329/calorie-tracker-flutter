@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'models/user_profile.dart';
 import 'models/food_item.dart';
 import 'models/food_recommendation.dart';
@@ -24,7 +24,7 @@ class CalorieTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '卡路里追踪器',
+      title: 'Calorie Tracker',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -77,22 +77,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 根据食物类别估算营养成分
       switch (category) {
-        case '蛋白质':
+        case 'Protein':
           protein += quantity * 0.25;
           carbs += quantity * 0.02;
           fat += quantity * 0.08;
           break;
-        case '主食':
+        case 'Staple Food':
           protein += quantity * 0.08;
           carbs += quantity * 0.75;
           fat += quantity * 0.02;
           break;
-        case '蔬菜':
+        case 'Vegetables':
           protein += quantity * 0.025;
           carbs += quantity * 0.06;
           fat += quantity * 0.005;
           break;
-        case '水果':
+        case 'Fruits':
           protein += quantity * 0.01;
           carbs += quantity * 0.15;
           fat += quantity * 0.003;
@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 添加食物记录
+  // Add Food记录
   Future<void> _addFoodRecord(FoodRecord record) async {
     try {
       await DatabaseService.saveFoodRecord(record);
@@ -195,16 +195,16 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => todayFoodRecords.add(record));
         _showSuccessMessage(
-            '添加了 ${record.foodItem?.name} (${record.totalCalories.round()} 卡路里)');
+            'Add了 ${record.foodItem?.name} (${record.totalCalories.round()} 卡路里)');
         // 重新加载推荐
         _loadQuickRecommendations();
       }
     } catch (e) {
-      _handleError('保存食物记录失败', e);
+      _handleError('Save食物记录失败', e);
     }
   }
 
-  // 删除食物记录
+  // Delete食物记录
   Future<void> _removeFoodRecord(int index) async {
     try {
       final record = todayFoodRecords[index];
@@ -215,12 +215,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (mounted) {
         setState(() => todayFoodRecords.removeAt(index));
-        _showInfoMessage('已删除食物记录');
+        _showInfoMessage('已Delete食物记录');
         // 重新加载推荐
         _loadQuickRecommendations();
       }
     } catch (e) {
-      _handleError('删除食物记录失败', e);
+      _handleError('Delete食物记录失败', e);
     }
   }
 
@@ -231,16 +231,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (mounted) {
         setState(() => currentUser = newProfile);
-        _showSuccessMessage('个人资料已保存');
+        _showSuccessMessage('个人资料已Save');
         // 重新加载推荐
         _loadQuickRecommendations();
       }
     } catch (e) {
-      _handleError('保存用户资料失败', e);
+      _handleError('Save用户资料失败', e);
     }
   }
 
-  // 快速添加推荐食物
+  // Quick Add推荐食物
   void _quickAddRecommendedFood(String foodName) {
     try {
       // 从食物数据库找到对应食物
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       _addFoodRecord(record);
     } catch (e) {
-      _showErrorMessage('添加失败：${e.toString()}');
+      _showErrorMessage('Add失败：${e.toString()}');
     }
   }
 
@@ -374,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // 调试功能
   Future<void> _clearAllData() async {
-    final confirmed = await _showConfirmDialog('确定要清除所有数据吗？');
+    final confirmed = await _showConfirmDialog('Confirm要清除所有数据吗？');
     if (confirmed) {
       try {
         await DatabaseService.clearAllData();
@@ -398,11 +398,11 @@ class _HomeScreenState extends State<HomeScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+                child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('确定'),
+                child: const Text('Confirm'),
               ),
             ],
           ),
@@ -455,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToAddFood,
         icon: const Icon(Icons.add),
-        label: const Text('添加食物'),
+        label: const Text('Add Food'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
@@ -465,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildLoadingScreen() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('卡路里追踪器'),
+        title: const Text('Calorie Tracker'),
         backgroundColor: Colors.blue.shade50,
         elevation: 0,
       ),
@@ -484,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text('卡路里追踪器'),
+      title: const Text('Calorie Tracker'),
       backgroundColor: Colors.blue.shade50,
       elevation: 0,
       actions: [
@@ -572,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${currentUser!.age}岁 • ${currentUser!.gender == 'male' ? '男' : '女'} • ${currentUser!.height.round()}cm • ${currentUser!.weight.round()}kg',
+                    '${currentUser!.age}岁 • ${currentUser!.gender == 'male' ? 'Male' : 'Female'} • ${currentUser!.height.round()}cm • ${currentUser!.weight.round()}kg',
                     style: TextStyle(
                       color: Colors.blue.shade600,
                       fontSize: 14,
@@ -594,7 +594,7 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               onPressed: _navigateToSettings,
               icon: Icon(Icons.settings, color: Colors.blue.shade600),
-              tooltip: '个人设置',
+              tooltip: 'Personal Settings',
             ),
           ],
         ),
@@ -631,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$timeOfDay！今日目标',
+                    '$timeOfDay！Today's Goal',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -669,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Text(
-              '今日卡路里进度',
+              'Today's Calorie Progress',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -968,7 +968,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildNutritionItem(
-                      '蛋白质', nutrition['protein']!, 'g', Colors.red),
+                      'Protein', nutrition['protein']!, 'g', Colors.red),
                   _buildNutritionItem(
                       '碳水', nutrition['carbs']!, 'g', Colors.amber),
                   _buildNutritionItem(
@@ -1187,7 +1187,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '快速操作',
+              'Quick Actions',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1202,25 +1202,25 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSpacing: 12,
               children: [
                 _buildActionTile(
-                  '添加食物',
+                  'Add Food',
                   Icons.add_circle,
                   Colors.green,
                   _navigateToAddFood,
                 ),
                 _buildActionTile(
-                  '快速添加', // 新功能，替代AI识别
+                  'Quick Add', // 新功能，替代AI识别
                   Icons.flash_on,
                   Colors.orange,
                   _navigateToQuickAdd,
                 ),
                 _buildActionTile(
-                  '营养分析',
+                  'Nutrition Analysis',
                   Icons.pie_chart,
                   Colors.blue,
                   _navigateToNutritionOverview,
                 ),
                 _buildActionTile(
-                  '查看历史',
+                  'View History',
                   Icons.history,
                   Colors.purple,
                   _navigateToHistory,
@@ -1233,7 +1233,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-// 添加快速添加导航方法
+// AddQuick Add导航方法
   void _navigateToQuickAdd() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -1283,7 +1283,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '设置与管理',
+              'Settings与管理',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1298,7 +1298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Icon(Icons.person, color: Colors.blue.shade700),
               ),
-              title: const Text('个人设置'),
+              title: const Text('Personal Settings'),
               subtitle: const Text('修改个人信息和目标'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: _navigateToSettings,
@@ -1343,15 +1343,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getMealTypeName(String mealType) {
     switch (mealType) {
       case 'breakfast':
-        return '早餐';
+        return 'Breakfast';
       case 'lunch':
-        return '午餐';
+        return 'Lunch';
       case 'dinner':
-        return '晚餐';
+        return 'Dinner';
       case 'snack':
-        return '零食';
+        return 'Snacks';
       default:
         return '未知';
     }
   }
 }
+

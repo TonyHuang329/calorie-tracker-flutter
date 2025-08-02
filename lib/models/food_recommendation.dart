@@ -1,4 +1,4 @@
-// lib/models/food_recommendation.dart
+﻿// lib/models/food_recommendation.dart
 import 'food_item.dart';
 import '../services/food_database.dart';
 
@@ -54,3 +54,4 @@ class FoodRecommendation {
     return 'FoodRecommendation(${food.name}, score: ${score.toStringAsFixed(2)}, reason: $reason)';
   }
 }
+

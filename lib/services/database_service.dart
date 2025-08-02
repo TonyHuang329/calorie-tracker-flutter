@@ -1,4 +1,4 @@
-// lib/services/database_service.dart
+﻿// lib/services/database_service.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/user_profile.dart';
@@ -67,11 +67,11 @@ class DatabaseService {
 
   // ========== 用户资料相关方法 ==========
 
-  // 保存用户资料
+  // Save用户资料
   static Future<int> saveUserProfile(UserProfile profile) async {
     final db = await database;
 
-    // 先删除现有的用户资料（假设只有一个用户）
+    // 先Delete现有的用户资料（假设只有一个用户）
     await db.delete(_userProfileTable);
 
     // 插入新的用户资料
@@ -95,7 +95,7 @@ class DatabaseService {
 
   // ========== 食物记录相关方法 ==========
 
-  // 保存食物记录
+  // Save食物记录
   static Future<int> saveFoodRecord(FoodRecord record) async {
     final db = await database;
 
@@ -135,7 +135,7 @@ class DatabaseService {
     return await getFoodRecordsByDate(DateTime.now());
   }
 
-  // 删除食物记录
+  // Delete食物记录
   static Future<int> deleteFoodRecord(int id) async {
     final db = await database;
     return await db.delete(
@@ -318,23 +318,23 @@ class DatabaseService {
       String foodName, String category) {
     // 具体食物的营养数据
     final specificFoodData = {
-      '米饭': {'protein': 2.7, 'carbs': 28.0, 'fat': 0.3},
-      '面条': {'protein': 11.0, 'carbs': 55.0, 'fat': 1.1},
-      '面包': {'protein': 8.5, 'carbs': 58.0, 'fat': 5.1},
-      '鸡胸肉': {'protein': 31.0, 'carbs': 0.0, 'fat': 3.6},
-      '鸡蛋': {'protein': 13.0, 'carbs': 1.1, 'fat': 11.0},
-      '牛肉': {'protein': 26.0, 'carbs': 0.0, 'fat': 17.0},
-      '鱼肉': {'protein': 22.0, 'carbs': 0.0, 'fat': 12.0},
-      '西兰花': {'protein': 3.0, 'carbs': 5.0, 'fat': 0.3},
-      '胡萝卜': {'protein': 0.9, 'carbs': 10.0, 'fat': 0.2},
-      '番茄': {'protein': 0.9, 'carbs': 3.9, 'fat': 0.2},
-      '苹果': {'protein': 0.3, 'carbs': 14.0, 'fat': 0.2},
-      '香蕉': {'protein': 1.1, 'carbs': 23.0, 'fat': 0.3},
-      '橙子': {'protein': 0.9, 'carbs': 12.0, 'fat': 0.1},
-      '薯片': {'protein': 7.0, 'carbs': 53.0, 'fat': 32.0},
-      '巧克力': {'protein': 4.9, 'carbs': 61.0, 'fat': 31.0},
-      '牛奶': {'protein': 3.4, 'carbs': 5.0, 'fat': 1.0},
-      '可乐': {'protein': 0.0, 'carbs': 10.6, 'fat': 0.0},
+      'Rice': {'protein': 2.7, 'carbs': 28.0, 'fat': 0.3},
+      'Noodles': {'protein': 11.0, 'carbs': 55.0, 'fat': 1.1},
+      'Bread': {'protein': 8.5, 'carbs': 58.0, 'fat': 5.1},
+      'Chicken Breast': {'protein': 31.0, 'carbs': 0.0, 'fat': 3.6},
+      'Egg': {'protein': 13.0, 'carbs': 1.1, 'fat': 11.0},
+      'Beef': {'protein': 26.0, 'carbs': 0.0, 'fat': 17.0},
+      'Fish': {'protein': 22.0, 'carbs': 0.0, 'fat': 12.0},
+      'Broccoli': {'protein': 3.0, 'carbs': 5.0, 'fat': 0.3},
+      'Carrot': {'protein': 0.9, 'carbs': 10.0, 'fat': 0.2},
+      'Tomato': {'protein': 0.9, 'carbs': 3.9, 'fat': 0.2},
+      'Apple': {'protein': 0.3, 'carbs': 14.0, 'fat': 0.2},
+      'Banana': {'protein': 1.1, 'carbs': 23.0, 'fat': 0.3},
+      'Orange': {'protein': 0.9, 'carbs': 12.0, 'fat': 0.1},
+      'Potato Chips': {'protein': 7.0, 'carbs': 53.0, 'fat': 32.0},
+      'Chocolate': {'protein': 4.9, 'carbs': 61.0, 'fat': 31.0},
+      'Milk': {'protein': 3.4, 'carbs': 5.0, 'fat': 1.0},
+      'Cola': {'protein': 0.0, 'carbs': 10.6, 'fat': 0.0},
     };
 
     // 如果有具体食物数据，使用具体数据
@@ -344,17 +344,17 @@ class DatabaseService {
 
     // 否则根据食物类别估算（每100g的营养成分）
     switch (category) {
-      case '蛋白质':
+      case 'Protein':
         return {'protein': 25.0, 'carbs': 2.0, 'fat': 8.0};
-      case '主食':
+      case 'Staple Food':
         return {'protein': 8.0, 'carbs': 75.0, 'fat': 2.0};
-      case '蔬菜':
+      case 'Vegetables':
         return {'protein': 2.5, 'carbs': 6.0, 'fat': 0.5};
-      case '水果':
+      case 'Fruits':
         return {'protein': 1.0, 'carbs': 15.0, 'fat': 0.3};
-      case '零食':
+      case 'Snacks':
         return {'protein': 5.0, 'carbs': 50.0, 'fat': 25.0};
-      case '饮品':
+      case 'Beverages':
         return {'protein': 1.0, 'carbs': 8.0, 'fat': 0.5};
       default:
         return {'protein': 10.0, 'carbs': 30.0, 'fat': 10.0};
@@ -574,3 +574,4 @@ class DatabaseService {
     };
   }
 }
+

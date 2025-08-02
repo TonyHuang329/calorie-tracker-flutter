@@ -1,169 +1,169 @@
-// lib/services/food_database.dart
+﻿// lib/services/food_database.dart
 import '../models/food_item.dart';
 
 class FoodDatabaseService {
   // 预设食物数据库 - 修改为以g为单位，每g的卡路里
   static List<FoodItem> _predefinedFoods = [
-    // 主食类 (每g卡路里)
+    // Staple Food类 (每g卡路里)
     FoodItem(
-      name: '米饭',
+      name: 'Rice',
       caloriesPerUnit: 1.3, // 130卡路里/100g = 1.3卡路里/g
       unit: 'g',
-      category: '主食',
-      protein: 0.027, // 2.7g蛋白质/100g = 0.027g/g
+      category: 'Staple Food',
+      protein: 0.027, // 2.7gProtein/100g = 0.027g/g
       carbs: 0.28,
       fat: 0.003,
     ),
     FoodItem(
-      name: '面条',
+      name: 'Noodles',
       caloriesPerUnit: 2.8,
       unit: 'g',
-      category: '主食',
+      category: 'Staple Food',
       protein: 0.11,
       carbs: 0.55,
       fat: 0.011,
     ),
     FoodItem(
-      name: '面包',
+      name: 'Bread',
       caloriesPerUnit: 3.12,
       unit: 'g',
-      category: '主食',
+      category: 'Staple Food',
       protein: 0.085,
       carbs: 0.58,
       fat: 0.051,
     ),
 
-    // 蛋白质类
+    // Protein类
     FoodItem(
-      name: '鸡胸肉',
+      name: 'Chicken Breast',
       caloriesPerUnit: 1.65,
       unit: 'g',
-      category: '蛋白质',
+      category: 'Protein',
       protein: 0.31,
       carbs: 0.0,
       fat: 0.036,
     ),
     FoodItem(
-      name: '鸡蛋',
+      name: 'Egg',
       caloriesPerUnit: 1.55,
       unit: 'g',
-      category: '蛋白质',
+      category: 'Protein',
       protein: 0.13,
       carbs: 0.011,
       fat: 0.11,
     ),
     FoodItem(
-      name: '牛肉',
+      name: 'Beef',
       caloriesPerUnit: 2.5,
       unit: 'g',
-      category: '蛋白质',
+      category: 'Protein',
       protein: 0.26,
       carbs: 0.0,
       fat: 0.17,
     ),
     FoodItem(
-      name: '鱼肉',
+      name: 'Fish',
       caloriesPerUnit: 2.06,
       unit: 'g',
-      category: '蛋白质',
+      category: 'Protein',
       protein: 0.22,
       carbs: 0.0,
       fat: 0.12,
     ),
 
-    // 蔬菜类
+    // Vegetables类
     FoodItem(
-      name: '西兰花',
+      name: 'Broccoli',
       caloriesPerUnit: 0.25,
       unit: 'g',
-      category: '蔬菜',
+      category: 'Vegetables',
       protein: 0.03,
       carbs: 0.05,
       fat: 0.003,
     ),
     FoodItem(
-      name: '胡萝卜',
+      name: 'Carrot',
       caloriesPerUnit: 0.41,
       unit: 'g',
-      category: '蔬菜',
+      category: 'Vegetables',
       protein: 0.009,
       carbs: 0.10,
       fat: 0.002,
     ),
     FoodItem(
-      name: '番茄',
+      name: 'Tomato',
       caloriesPerUnit: 0.18,
       unit: 'g',
-      category: '蔬菜',
+      category: 'Vegetables',
       protein: 0.009,
       carbs: 0.039,
       fat: 0.002,
     ),
 
-    // 水果类
+    // Fruits类
     FoodItem(
-      name: '苹果',
+      name: 'Apple',
       caloriesPerUnit: 0.52,
       unit: 'g',
-      category: '水果',
+      category: 'Fruits',
       protein: 0.003,
       carbs: 0.14,
       fat: 0.002,
     ),
     FoodItem(
-      name: '香蕉',
+      name: 'Banana',
       caloriesPerUnit: 0.89,
       unit: 'g',
-      category: '水果',
+      category: 'Fruits',
       protein: 0.011,
       carbs: 0.23,
       fat: 0.003,
     ),
     FoodItem(
-      name: '橙子',
+      name: 'Orange',
       caloriesPerUnit: 0.47,
       unit: 'g',
-      category: '水果',
+      category: 'Fruits',
       protein: 0.009,
       carbs: 0.12,
       fat: 0.001,
     ),
 
-    // 零食类
+    // Snacks类
     FoodItem(
-      name: '薯片',
+      name: 'Potato Chips',
       caloriesPerUnit: 5.36,
       unit: 'g',
-      category: '零食',
+      category: 'Snacks',
       protein: 0.07,
       carbs: 0.53,
       fat: 0.32,
     ),
     FoodItem(
-      name: '巧克力',
+      name: 'Chocolate',
       caloriesPerUnit: 5.46,
       unit: 'g',
-      category: '零食',
+      category: 'Snacks',
       protein: 0.049,
       carbs: 0.61,
       fat: 0.31,
     ),
 
-    // 饮品类 (以ml为单位)
+    // Beverages类 (以ml为单位)
     FoodItem(
-      name: '牛奶',
+      name: 'Milk',
       caloriesPerUnit: 0.42,
       unit: 'ml',
-      category: '饮品',
+      category: 'Beverages',
       protein: 0.034,
       carbs: 0.05,
       fat: 0.01,
     ),
     FoodItem(
-      name: '可乐',
+      name: 'Cola',
       caloriesPerUnit: 0.42,
       unit: 'ml',
-      category: '饮品',
+      category: 'Beverages',
       protein: 0.0,
       carbs: 0.106,
       fat: 0.0,
@@ -180,7 +180,7 @@ class FoodDatabaseService {
     return _predefinedFoods.where((food) => food.category == category).toList();
   }
 
-  // 搜索食物
+  // Search食物
   static List<FoodItem> searchFoods(String query) {
     if (query.isEmpty) {
       return getAllFoods();
@@ -212,7 +212,7 @@ class FoodDatabaseService {
     return _predefinedFoods.take(10).toList();
   }
 
-  // 添加自定义食物
+  // Add自定义食物
   static void addCustomFood(FoodItem food) {
     _predefinedFoods.add(food);
   }
@@ -236,17 +236,17 @@ class FoodDatabaseService {
   // 获取推荐食用量（基于常见份量）
   static double getRecommendedServing(FoodItem food) {
     switch (food.category) {
-      case '主食':
+      case 'Staple Food':
         return 150.0; // 150g
-      case '蛋白质':
+      case 'Protein':
         return 100.0; // 100g
-      case '蔬菜':
+      case 'Vegetables':
         return 200.0; // 200g
-      case '水果':
+      case 'Fruits':
         return 150.0; // 150g
-      case '零食':
+      case 'Snacks':
         return 30.0; // 30g
-      case '饮品':
+      case 'Beverages':
         return 250.0; // 250ml
       default:
         return 100.0;
@@ -265,3 +265,4 @@ class FoodDatabaseService {
     }
   }
 }
+

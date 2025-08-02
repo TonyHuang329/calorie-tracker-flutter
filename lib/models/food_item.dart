@@ -1,4 +1,4 @@
-// lib/models/food_item.dart
+﻿// lib/models/food_item.dart
 import 'package:flutter/material.dart';
 
 class FoodItem {
@@ -7,7 +7,7 @@ class FoodItem {
   final double caloriesPerUnit; // 每单位卡路里
   final String unit; // 单位（如：100g, 1个, 1杯）
   final String category; // 食物分类
-  final double? protein; // 蛋白质(g)
+  final double? protein; // Protein(g)
   final double? carbs; // 碳水化合物(g)
   final double? fat; // 脂肪(g)
   final DateTime createdAt;
@@ -80,7 +80,7 @@ class FoodItem {
   }
 }
 
-// 食物记录模型（用户每次添加的食物记录）
+// 食物记录模型（用户每次Add的食物记录）
 class FoodRecord {
   final int? id;
   final int foodItemId; // 关联的食物ID
@@ -151,7 +151,7 @@ class FoodRecord {
   }
 }
 
-// 每日卡路里数据模型（用于历史记录和图表）
+// 每日卡路里数据模型（用于History Records和图表）
 class DailyCalorieData {
   final DateTime date;
   final double totalCalories;
@@ -264,10 +264,10 @@ class NutritionStats {
     required this.date,
   });
 
-  // 获取蛋白质卡路里百分比
+  // 获取Protein卡路里百分比
   double get proteinPercentage {
     if (totalCalories == 0) return 0;
-    return (totalProtein * 4) / totalCalories * 100; // 蛋白质每克4卡路里
+    return (totalProtein * 4) / totalCalories * 100; // Protein每克4卡路里
   }
 
   // 获取碳水化合物卡路里百分比
@@ -359,3 +359,4 @@ class GoalAchievementStats {
     return Colors.red;
   }
 }
+

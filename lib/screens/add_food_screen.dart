@@ -1,4 +1,4 @@
-// lib/screens/add_food_screen.dart
+﻿// lib/screens/add_food_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/food_item.dart';
@@ -27,7 +27,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   FoodItem? _selectedFood;
   String _selectedMealType = 'breakfast';
   double _quantity = 100.0;
-  List<FoodRecord> _addedRecords = []; // 存储已添加的食物记录
+  List<FoodRecord> _addedRecords = []; // 存储已Add的食物记录
 
   late TabController _tabController;
 
@@ -69,7 +69,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   void _selectFood(FoodItem food) {
     setState(() {
       _selectedFood = food;
-      // 设置推荐数量
+      // Settings推荐数量
       final recommended = FoodDatabaseService.getRecommendedServing(food);
       _quantityController.text = recommended.toString();
       _quantity = recommended;
@@ -107,18 +107,18 @@ class _AddFoodScreenState extends State<AddFoodScreen>
       mealType: _selectedMealType,
     );
 
-    // 添加到本地记录列表
+    // Add到本地记录列表
     setState(() {
       _addedRecords.add(foodRecord);
-      _selectedFood = null; // 清除选择，方便继续添加
+      _selectedFood = null; // 清除选择，方便继续Add
     });
 
-    // 调用回调函数保存到数据库
+    // 调用回调函数Save到数据库
     widget.onFoodAdded(foodRecord);
 
     // 显示成功提示
     _showSuccessMessage(
-        '${foodRecord.foodItem?.name} 已添加 (${totalCalories.round()} 卡路里)');
+        '${foodRecord.foodItem?.name} 已Add (${totalCalories.round()} 卡路里)');
 
     // 保持在当前食物选择页面，不跳转
   }
@@ -176,7 +176,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('设置 ${_selectedFood!.name} 的数量'),
+        title: Text('Settings ${_selectedFood!.name} 的数量'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -230,14 +230,14 @@ class _AddFoodScreenState extends State<AddFoodScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _addFoodRecord();
             },
-            child: const Text('添加'),
+            child: const Text('Add'),
           ),
         ],
       ),
@@ -271,7 +271,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('添加食物'),
+        title: const Text('Add Food'),
         backgroundColor: Colors.green.shade50,
         elevation: 0,
         actions: [
@@ -320,7 +320,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                   ],
                 ],
               ),
-              text: '已添加',
+              text: '已Add',
             ),
           ],
         ),
@@ -340,17 +340,17 @@ class _AddFoodScreenState extends State<AddFoodScreen>
       children: [
         Column(
           children: [
-            // 顶部搜索和餐次选择
+            // 顶部Search和餐次选择
             Container(
               color: Colors.green.shade50,
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // 搜索栏
+                  // Search栏
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: '搜索食物名称或分类...',
+                      hintText: 'Search食物名称或分类...',
                       prefixIcon:
                           Icon(Icons.search, color: Colors.green.shade600),
                       border: OutlineInputBorder(
@@ -399,7 +399,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                     Icon(Icons.wb_sunny,
                                         color: Colors.orange, size: 16),
                                     SizedBox(width: 8),
-                                    Text('早餐'),
+                                    Text('Breakfast'),
                                   ],
                                 ),
                               ),
@@ -410,7 +410,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                     Icon(Icons.wb_sunny_outlined,
                                         color: Colors.green, size: 16),
                                     SizedBox(width: 8),
-                                    Text('午餐'),
+                                    Text('Lunch'),
                                   ],
                                 ),
                               ),
@@ -421,7 +421,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                     Icon(Icons.nightlight_round,
                                         color: Colors.blue, size: 16),
                                     SizedBox(width: 8),
-                                    Text('晚餐'),
+                                    Text('Dinner'),
                                   ],
                                 ),
                               ),
@@ -432,7 +432,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                     Icon(Icons.cookie,
                                         color: Colors.purple, size: 16),
                                     SizedBox(width: 8),
-                                    Text('零食'),
+                                    Text('Snacks'),
                                   ],
                                 ),
                               ),
@@ -673,14 +673,14 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                     ),
                     const SizedBox(height: 12),
 
-                    // 添加按钮
+                    // Add按钮
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _addFoodRecord,
                         icon: const Icon(Icons.add_circle_outline, size: 20),
                         label: const Text(
-                          '添加并继续',
+                          'Add并继续',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -719,7 +719,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              '还没有添加任何食物',
+              '还没有Add任何食物',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -728,7 +728,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              '在"选择食物"标签页中添加食物',
+              '在"选择食物"标签页中Add Food',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -764,7 +764,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '本次添加',
+                    '本次Add',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.green.shade700,
@@ -805,7 +805,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
           ),
         ),
 
-        // 已添加食物列表
+        // 已Add Food列表
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -904,7 +904,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
               onPressed: _finishAdding,
               icon: const Icon(Icons.check_circle, size: 20),
               label: const Text(
-                '完成添加',
+                '完成Add',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -928,17 +928,17 @@ class _AddFoodScreenState extends State<AddFoodScreen>
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case '主食':
+      case 'Staple Food':
         return Icons.rice_bowl;
-      case '蛋白质':
+      case 'Protein':
         return Icons.egg;
-      case '蔬菜':
+      case 'Vegetables':
         return Icons.eco;
-      case '水果':
+      case 'Fruits':
         return Icons.apple;
-      case '零食':
+      case 'Snacks':
         return Icons.cookie;
-      case '饮品':
+      case 'Beverages':
         return Icons.local_drink;
       default:
         return Icons.restaurant;
@@ -947,17 +947,17 @@ class _AddFoodScreenState extends State<AddFoodScreen>
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case '主食':
+      case 'Staple Food':
         return Colors.orange;
-      case '蛋白质':
+      case 'Protein':
         return Colors.red;
-      case '蔬菜':
+      case 'Vegetables':
         return Colors.green;
-      case '水果':
+      case 'Fruits':
         return Colors.purple;
-      case '零食':
+      case 'Snacks':
         return Colors.brown;
-      case '饮品':
+      case 'Beverages':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -997,15 +997,16 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   String _getMealTypeName(String mealType) {
     switch (mealType) {
       case 'breakfast':
-        return '早餐';
+        return 'Breakfast';
       case 'lunch':
-        return '午餐';
+        return 'Lunch';
       case 'dinner':
-        return '晚餐';
+        return 'Dinner';
       case 'snack':
-        return '零食';
+        return 'Snacks';
       default:
         return '未知';
     }
   }
 }
+

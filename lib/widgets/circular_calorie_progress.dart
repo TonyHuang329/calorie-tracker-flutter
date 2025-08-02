@@ -1,4 +1,4 @@
-// lib/widgets/circular_calorie_progress.dart
+﻿// lib/widgets/circular_calorie_progress.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -258,3 +258,4 @@ class ProgressDotPainter extends CustomPainter {
     return true;
   }
 }
+

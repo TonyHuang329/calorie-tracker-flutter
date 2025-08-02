@@ -1,4 +1,4 @@
-import '../models/user_profile.dart';
+﻿import '../models/user_profile.dart';
 
 class CalorieCalculatorService {
   /// 根据用户资料计算每日卡路里需求
@@ -92,24 +92,24 @@ class CalorieCalculatorService {
   }) {
     Map<String, String?> errors = {};
 
-    // 体重验证 (30-300kg)
+    // Weight验证 (30-300kg)
     if (weight < 30 || weight > 300) {
-      errors['weight'] = '体重应在30-300kg之间';
+      errors['weight'] = 'Weight应在30-300kg之间';
     }
 
-    // 身高验证 (100-250cm)
+    // Height验证 (100-250cm)
     if (height < 100 || height > 250) {
-      errors['height'] = '身高应在100-250cm之间';
+      errors['height'] = 'Height应在100-250cm之间';
     }
 
-    // 年龄验证 (10-120岁)
+    // Age验证 (10-120岁)
     if (age < 10 || age > 120) {
-      errors['age'] = '年龄应在10-120岁之间';
+      errors['age'] = 'Age应在10-120岁之间';
     }
 
-    // 性别验证
+    // Gender验证
     if (!['male', 'female'].contains(gender.toLowerCase())) {
-      errors['gender'] = '性别必须是male或female';
+      errors['gender'] = 'Gender必须是male或female';
     }
 
     // 活动水平验证
@@ -127,3 +127,4 @@ class CalorieCalculatorService {
     return errors;
   }
 }
+

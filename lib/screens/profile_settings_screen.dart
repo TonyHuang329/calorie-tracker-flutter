@@ -1,4 +1,4 @@
-// lib/screens/profile_settings_screen.dart
+﻿// lib/screens/profile_settings_screen.dart
 import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
 import '../services/calorie_calculator.dart';
@@ -82,11 +82,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('重置确认'),
-        content: const Text('确定要重置所有设置吗？'),
+        content: const Text('Confirm要重置所有Settings吗？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -100,7 +100,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 _selectedActivityLevel = 'moderate';
               });
             },
-            child: const Text('确定'),
+            child: const Text('Confirm'),
           ),
         ],
       ),
@@ -136,11 +136,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('个人设置'),
+        title: const Text('Personal Settings'),
         actions: [
           TextButton(
             onPressed: _saveProfile,
-            child: const Text('保存', style: TextStyle(color: Colors.white)),
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -159,24 +159,24 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '基本信息',
+                        'Basic Information',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       const SizedBox(height: 16),
 
-                      // 姓名
+                      // Name
                       TextFormField(
                         controller: _nameController,
                         decoration: const InputDecoration(
-                          labelText: '姓名',
+                          labelText: 'Name',
                           prefixIcon: Icon(Icons.person),
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '请输入姓名';
+                            return '请输入Name';
                           }
                           return null;
                         },
@@ -184,11 +184,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
                       const SizedBox(height: 16),
 
-                      // 年龄
+                      // Age
                       TextFormField(
                         controller: _ageController,
                         decoration: const InputDecoration(
-                          labelText: '年龄',
+                          labelText: 'Age',
                           prefixIcon: Icon(Icons.cake),
                           border: OutlineInputBorder(),
                           suffixText: '岁',
@@ -196,11 +196,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入年龄';
+                            return '请输入Age';
                           }
                           final age = int.tryParse(value);
                           if (age == null || age < 10 || age > 120) {
-                            return '年龄应在10-120岁之间';
+                            return 'Age应在10-120岁之间';
                           }
                           return null;
                         },
@@ -209,17 +209,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
                       const SizedBox(height: 16),
 
-                      // 性别选择
+                      // Gender选择
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('性别', style: TextStyle(fontSize: 16)),
+                          const Text('Gender', style: TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               Expanded(
                                 child: RadioListTile<String>(
-                                  title: const Text('男'),
+                                  title: const Text('Male'),
                                   value: 'male',
                                   groupValue: _selectedGender,
                                   onChanged: (value) {
@@ -231,7 +231,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                               ),
                               Expanded(
                                 child: RadioListTile<String>(
-                                  title: const Text('女'),
+                                  title: const Text('Female'),
                                   value: 'female',
                                   groupValue: _selectedGender,
                                   onChanged: (value) {
@@ -267,11 +267,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // 身高
+                      // Height
                       TextFormField(
                         controller: _heightController,
                         decoration: const InputDecoration(
-                          labelText: '身高',
+                          labelText: 'Height',
                           prefixIcon: Icon(Icons.height),
                           border: OutlineInputBorder(),
                           suffixText: 'cm',
@@ -279,11 +279,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入身高';
+                            return '请输入Height';
                           }
                           final height = double.tryParse(value);
                           if (height == null || height < 100 || height > 250) {
-                            return '身高应在100-250cm之间';
+                            return 'Height应在100-250cm之间';
                           }
                           return null;
                         },
@@ -292,11 +292,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
                       const SizedBox(height: 16),
 
-                      // 体重
+                      // Weight
                       TextFormField(
                         controller: _weightController,
                         decoration: const InputDecoration(
-                          labelText: '体重',
+                          labelText: 'Weight',
                           prefixIcon: Icon(Icons.monitor_weight),
                           border: OutlineInputBorder(),
                           suffixText: 'kg',
@@ -304,11 +304,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入体重';
+                            return '请输入Weight';
                           }
                           final weight = double.tryParse(value);
                           if (weight == null || weight < 30 || weight > 300) {
-                            return '体重应在30-300kg之间';
+                            return 'Weight应在30-300kg之间';
                           }
                           return null;
                         },
@@ -425,7 +425,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _saveProfile,
-                      child: const Text('保存设置'),
+                      child: const Text('SaveSettings'),
                     ),
                   ),
                 ],
@@ -463,3 +463,4 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 }
+

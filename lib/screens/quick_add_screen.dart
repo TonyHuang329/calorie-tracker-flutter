@@ -1,4 +1,4 @@
-// lib/screens/quick_add_screen.dart - 修复版
+﻿// lib/screens/quick_add_screen.dart - 修复版
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../services/quick_add_service.dart';
@@ -112,12 +112,12 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
       widget.onFoodAdded(record);
 
-      // 添加到收藏夹（可选）
+      // Add到收藏夹（可选）
       QuickAddService.instance.addToFavorites(foodName);
 
-      _showSuccessMessage('已添加 $foodName');
+      _showSuccessMessage('已Add $foodName');
     } catch (e) {
-      _showErrorMessage('添加失败：${e.toString()}');
+      _showErrorMessage('Add失败：${e.toString()}');
     }
   }
 
@@ -168,7 +168,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -184,7 +184,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         widget.onFoodAdded(record);
       }
 
-      _showSuccessMessage('已添加模板：${template.name} (${records.length}项食物)');
+      _showSuccessMessage('已Add模板：${template.name} (${records.length}项食物)');
     } catch (e) {
       _showErrorMessage('应用模板失败：${e.toString()}');
     }
@@ -220,7 +220,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('快速添加'),
+        title: const Text('Quick Add'),
         backgroundColor: Colors.orange.shade50,
         elevation: 0,
         // 移除 bottom，改为在 body 中处理
@@ -233,11 +233,11 @@ class _QuickAddScreenState extends State<QuickAddScreen>
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // 搜索框
+                // Search框
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: '搜索食物... (支持拼音)',
+                    hintText: 'Search食物... (支持拼音)',
                     prefixIcon:
                         Icon(Icons.search, color: Colors.orange.shade600),
                     border: OutlineInputBorder(
@@ -278,13 +278,13 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                           },
                           items: const [
                             DropdownMenuItem(
-                                value: 'breakfast', child: Text('🌅 早餐')),
+                                value: 'breakfast', child: Text('🌅 Breakfast')),
                             DropdownMenuItem(
-                                value: 'lunch', child: Text('☀️ 午餐')),
+                                value: 'lunch', child: Text('☀️ Lunch')),
                             DropdownMenuItem(
-                                value: 'dinner', child: Text('🌙 晚餐')),
+                                value: 'dinner', child: Text('🌙 Dinner')),
                             DropdownMenuItem(
-                                value: 'snack', child: Text('🍪 零食')),
+                                value: 'snack', child: Text('🍪 Snacks')),
                           ],
                         ),
                       ),
@@ -308,7 +308,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                 Tab(icon: Icon(Icons.history), text: '最近'),
                 Tab(icon: Icon(Icons.favorite), text: '收藏'),
                 Tab(icon: Icon(Icons.restaurant), text: '模板'),
-                Tab(icon: Icon(Icons.search), text: '搜索'),
+                Tab(icon: Icon(Icons.search), text: 'Search'),
               ],
             ),
           ),
@@ -334,7 +334,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildRecentTab() {
     if (_recentFoods.isEmpty) {
-      return _buildEmptyState('暂无最近添加的食物', '开始记录饮食后，这里会显示最近吃过的食物');
+      return _buildEmptyState('暂无最近Add的食物', '开始记录饮食后，这里会显示最近吃过的食物');
     }
 
     return ListView.builder(
@@ -344,7 +344,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         final foodName = _recentFoods[index];
         return _buildFoodTile(
           foodName,
-          subtitle: '最近添加',
+          subtitle: '最近Add',
           onTap: () => _quickAddFood(foodName),
           onLongPress: () => _showQuantityDialog(foodName),
         );
@@ -354,7 +354,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildFavoritesTab() {
     if (_favoriteFoods.isEmpty) {
-      return _buildEmptyState('暂无收藏的食物', '添加食物时会自动收藏，长按可调整数量');
+      return _buildEmptyState('暂无收藏的食物', 'Add Food时会自动收藏，长按可调整数量');
     }
 
     return ListView.builder(
@@ -382,7 +382,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildTemplatesTab() {
     if (_mealTemplates.isEmpty) {
-      return _buildEmptyState('暂无餐次模板', '您可以保存常用的餐次组合作为模板\n(此功能未来版本开放)');
+      return _buildEmptyState('暂无餐次模板', '您可以Save常用的餐次组合作为模板\n(此功能未来版本开放)');
     }
 
     return ListView.builder(
@@ -425,12 +425,12 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                       color: Colors.red, size: 20),
                   onPressed: () async {
                     final confirmed = await _showConfirmDialog(
-                        '确定删除模板 "${template.name}" 吗？');
+                        'ConfirmDelete模板 "${template.name}" 吗？');
                     if (confirmed) {
                       await QuickAddService.instance
                           .deleteMealTemplate(template.name);
                       _loadData();
-                      _showSuccessMessage('已删除模板');
+                      _showSuccessMessage('已Delete模板');
                     }
                   },
                 ),
@@ -445,7 +445,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildSearchTab() {
     if (_searchController.text.isEmpty) {
-      return _buildEmptyState('输入食物名称开始搜索', '支持中文名称、拼音搜索\n例如：输入"pg"可以找到"苹果"');
+      return _buildEmptyState('输入食物名称开始Search', '支持中文名称、拼音Search\n例如：输入"pg"可以找到"Apple"');
     }
 
     if (_searchResults.isEmpty) {
@@ -594,11 +594,11 @@ class _QuickAddScreenState extends State<QuickAddScreen>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确定'),
+                child: const Text('Confirm'),
               ),
             ],
           ),
@@ -615,17 +615,17 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     );
 
     switch (food.category) {
-      case '主食':
+      case 'Staple Food':
         return Colors.orange;
-      case '蛋白质':
+      case 'Protein':
         return Colors.red;
-      case '蔬菜':
+      case 'Vegetables':
         return Colors.green;
-      case '水果':
+      case 'Fruits':
         return Colors.purple;
-      case '零食':
+      case 'Snacks':
         return Colors.brown;
-      case '饮品':
+      case 'Beverages':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -641,20 +641,21 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     );
 
     switch (food.category) {
-      case '主食':
+      case 'Staple Food':
         return Icons.rice_bowl;
-      case '蛋白质':
+      case 'Protein':
         return Icons.egg;
-      case '蔬菜':
+      case 'Vegetables':
         return Icons.eco;
-      case '水果':
+      case 'Fruits':
         return Icons.apple;
-      case '零食':
+      case 'Snacks':
         return Icons.cookie;
-      case '饮品':
+      case 'Beverages':
         return Icons.local_drink;
       default:
         return Icons.restaurant;
     }
   }
 }
+

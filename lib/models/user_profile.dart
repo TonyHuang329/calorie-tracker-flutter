@@ -1,4 +1,4 @@
-class UserProfile {
+﻿class UserProfile {
   final int? id;
   final String name;
   final int age;
@@ -25,10 +25,10 @@ class UserProfile {
   // 计算BMR (基础代谢率)
   double calculateBMR() {
     if (gender.toLowerCase() == 'male') {
-      // 男性BMR公式
+      // Male性BMR公式
       return 10 * weight + 6.25 * height - 5 * age + 5;
     } else {
-      // 女性BMR公式  
+      // Female性BMR公式  
       return 10 * weight + 6.25 * height - 5 * age - 161;
     }
   }

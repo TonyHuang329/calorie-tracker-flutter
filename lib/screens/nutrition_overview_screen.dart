@@ -1,4 +1,4 @@
-// lib/screens/nutrition_overview_screen.dart
+﻿// lib/screens/nutrition_overview_screen.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/food_item.dart';
@@ -46,7 +46,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
 
     nutritionGoals = {
       'calories': tdee,
-      'protein': widget.userProfile.weight * 1.2, // 每公斤体重1.2g蛋白质
+      'protein': widget.userProfile.weight * 1.2, // 每公斤Weight1.2gProtein
       'carbs': tdee * 0.5 / 4, // 50%来自碳水化合物，每克4卡路里
       'fat': tdee * 0.3 / 9, // 30%来自脂肪，每克9卡路里
     };
@@ -75,7 +75,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('营养概览'),
+        title: const Text('Nutrition Overview'),
         backgroundColor: Colors.purple.shade50,
         elevation: 0,
         bottom: TabBar(
@@ -166,7 +166,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            '添加一些食物来查看营养分析',
+            'Add一些食物来查看Nutrition Analysis',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade500,
@@ -223,7 +223,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLegendItem('蛋白质', Colors.red,
+                        _buildLegendItem('Protein', Colors.red,
                             todayNutrition!.totalProtein, 'g'),
                         const SizedBox(height: 12),
                         _buildLegendItem('碳水化合物', Colors.amber,
@@ -254,7 +254,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildPercentageItem(
-                    '蛋白质',
+                    'Protein',
                     '${todayNutrition!.proteinPercentage.round()}%',
                     Colors.red,
                     _isHealthyPercentage(
@@ -439,7 +439,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 12),
             _buildProgressBar(
-              '蛋白质',
+              'Protein',
               todayNutrition!.totalProtein,
               nutritionGoals['protein']!,
               'g',
@@ -511,13 +511,13 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
     List<String> advice = [];
 
     if (todayNutrition!.proteinPercentage < 10) {
-      advice.add('蛋白质摄入偏低，建议增加鸡胸肉、鱼类或豆类');
+      advice.add('Protein摄入偏低，建议增加Chicken Breast、鱼类或豆类');
     } else if (todayNutrition!.proteinPercentage > 35) {
-      advice.add('蛋白质摄入过高，注意营养平衡');
+      advice.add('Protein摄入过高，注意营养平衡');
     }
 
     if (todayNutrition!.carbsPercentage < 45) {
-      advice.add('碳水化合物偏低，适量增加全谷物和水果');
+      advice.add('碳水化合物偏低，适量增加全谷物和Fruits');
     } else if (todayNutrition!.carbsPercentage > 65) {
       advice.add('碳水化合物过高，减少精制糖和加工食品');
     }
@@ -623,10 +623,10 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
 
   Widget _buildMealSection(String mealType, List<FoodRecord> records) {
     final mealNames = {
-      'breakfast': '早餐',
-      'lunch': '午餐',
-      'dinner': '晚餐',
-      'snack': '零食',
+      'breakfast': 'Breakfast',
+      'lunch': 'Lunch',
+      'dinner': 'Dinner',
+      'snack': 'Snacks',
     };
 
     final mealColors = {
@@ -732,7 +732,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
       score += 30;
     }
 
-    // 蛋白质充足
+    // Protein充足
     if (todayNutrition!.totalProtein >= nutritionGoals['protein']! * 0.8) {
       score += 30;
     }
@@ -815,8 +815,8 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 12),
             _buildSuggestionItem(
-              '增加蔬菜摄入',
-              '每餐至少包含一份绿叶蔬菜',
+              '增加Vegetables摄入',
+              '每餐至少包含一份绿叶Vegetables',
               Icons.eco,
               Colors.green,
             ),
@@ -879,3 +879,4 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
     );
   }
 }
+
