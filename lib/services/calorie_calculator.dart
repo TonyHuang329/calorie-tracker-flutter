@@ -51,17 +51,17 @@ class CalorieCalculatorService {
   static String getActivityLevelDescription(String activityLevel) {
     switch (activityLevel.toLowerCase()) {
       case 'sedentary':
-        return '久坐 (很少或没有运动)';
+        return 'Sedentary (little/no exercise)';
       case 'light':
-        return '轻度活动 (每周轻度运动1-3天)';
+        return 'Light Activity (light exercise 1-3 days/week)';
       case 'moderate':
-        return '中度活动 (每周中度运动3-5天)';
+        return 'Moderate Activity (moderate exercise 3-5 days/week)';
       case 'active':
-        return '高度活动 (每周剧烈运动6-7天)';
+        return 'High Activity (hard exercise 6-7 days/week)';
       case 'very_active':
-        return '极度活动 (非常剧烈的运动，体力工作)';
+        return 'Very High Activity (very hard exercise, physical job)';
       default:
-        return '未知活动水平';
+        return 'Unknown activity level';
     }
   }
 
@@ -127,4 +127,3 @@ class CalorieCalculatorService {
     return errors;
   }
 }
-
