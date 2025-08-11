@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'models/user_profile.dart';
 import 'models/food_item.dart';
+import 'models/health_goal.dart';
 import 'services/calorie_calculator.dart';
 import 'services/database_service.dart';
 import 'services/food_database.dart';
@@ -9,6 +10,8 @@ import 'screens/add_food_screen.dart';
 import 'screens/profile_settings_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/nutrition_overview_screen.dart';
+import 'screens/create_goal_screen.dart';
+import 'screens/health_goals_screen.dart';
 import 'widgets/circular_calorie_progress.dart';
 import 'services/quick_add_service.dart';
 import 'screens/quick_add_screen.dart';
@@ -319,6 +322,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Health Goals as a separate feature
+  void _navigateToHealthGoals() {
+    if (currentUser != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => HealthGoalsScreen(userProfile: currentUser!),
+        ),
+      );
+    }
+  }
+
   // Intelligently select meal type based on time
   String _getMealTypeFromTime() {
     final hour = DateTime.now().hour;
@@ -387,7 +401,9 @@ class _HomeScreenState extends State<HomeScreen> {
       try {
         await DatabaseService.clearAllData();
         if (mounted) {
-          setState(() => todayFoodRecords.clear());
+          setState(() {
+            todayFoodRecords.clear();
+          });
           _showInfoMessage('All data cleared');
           _loadQuickRecommendations();
         }
@@ -814,6 +830,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     Colors.blue, _navigateToNutritionOverview),
                 _buildActionTile('View History', Icons.history, Colors.purple,
                     _navigateToHistory),
+                // Health Goals as a separate feature
+                _buildActionTile('Health Goals', Icons.flag, Colors.teal,
+                    _navigateToHealthGoals),
+                _buildActionTile('Personal Settings', Icons.person, Colors.grey,
+                    _navigateToSettings),
               ],
             ),
           ],
@@ -830,16 +851,30 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Settings & Management',
+              'Features & Tools',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Personal Settings'),
-              subtitle: const Text('Modify personal information and goals'),
+              leading: const Icon(Icons.flag, color: Colors.teal),
+              title: const Text('Health Goals'),
+              subtitle: const Text('Set and track your health objectives'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _navigateToSettings,
+              onTap: _navigateToHealthGoals,
+            ),
+            ListTile(
+              leading: const Icon(Icons.pie_chart, color: Colors.blue),
+              title: const Text('Nutrition Analysis'),
+              subtitle: const Text('Detailed nutrition breakdown and insights'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: _navigateToNutritionOverview,
+            ),
+            ListTile(
+              leading: const Icon(Icons.history, color: Colors.purple),
+              title: const Text('History & Trends'),
+              subtitle: const Text('View your progress over time'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: _navigateToHistory,
             ),
           ],
         ),
