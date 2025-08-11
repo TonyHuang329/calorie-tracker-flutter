@@ -19,21 +19,21 @@
     required this.activityLevel,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
-  // 计算BMR (基础代谢率)
+  // Calculate BMR (Basal Metabolic Rate)
   double calculateBMR() {
     if (gender.toLowerCase() == 'male') {
-      // Male性BMR公式
+      // Male BMR formula
       return 10 * weight + 6.25 * height - 5 * age + 5;
     } else {
-      // Female性BMR公式  
+      // Female BMR formula
       return 10 * weight + 6.25 * height - 5 * age - 161;
     }
   }
 
-  // 计算TDEE (每日总能量消耗)
+  // Calculate TDEE (Total Daily Energy Expenditure)
   double calculateTDEE() {
     double bmr = calculateBMR();
     double activityMultiplier = _getActivityMultiplier();
@@ -43,21 +43,21 @@
   double _getActivityMultiplier() {
     switch (activityLevel.toLowerCase()) {
       case 'sedentary':
-        return 1.2;   // 久坐
+        return 1.2; // Sedentary
       case 'light':
-        return 1.375; // 轻度活动
+        return 1.375; // Light activity
       case 'moderate':
-        return 1.55;  // 中度活动
+        return 1.55; // Moderate activity
       case 'active':
-        return 1.725; // 高度活动
+        return 1.725; // High activity
       case 'very_active':
-        return 1.9;   // 极度活动
+        return 1.9; // Very high activity
       default:
         return 1.2;
     }
   }
 
-  // 复制方法，用于更新用户信息
+  // Copy method for updating user information
   UserProfile copyWith({
     int? id,
     String? name,
@@ -82,7 +82,7 @@
     );
   }
 
-  // 转换为Map（用于数据库存储）
+  // Convert to Map (for database storage)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -97,7 +97,7 @@
     };
   }
 
-  // 从Map创建UserProfile
+  // Create UserProfile from Map
   factory UserProfile.fromMap(Map<String, dynamic> map) {
     return UserProfile(
       id: map['id'],

@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 class FoodItem {
   final int? id;
   final String name;
-  final double caloriesPerUnit; // 每单位卡路里
-  final String unit; // 单位（如：100g, 1个, 1杯）
-  final String category; // 食物分类
+  final double caloriesPerUnit; // Calories per unit
+  final String unit; // Unit (e.g., 100g, 1 piece, 1 cup)
+  final String category; // Food category
   final double? protein; // Protein(g)
-  final double? carbs; // 碳水化合物(g)
-  final double? fat; // 脂肪(g)
+  final double? carbs; // Carbohydrates(g)
+  final double? fat; // Fat(g)
   final DateTime createdAt;
 
   FoodItem({
@@ -24,7 +24,7 @@ class FoodItem {
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  // 转换为Map（用于数据库存储）
+  // Convert to Map (for database storage)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -39,7 +39,7 @@ class FoodItem {
     };
   }
 
-  // 从Map创建FoodItem
+  // Create FoodItem from Map
   factory FoodItem.fromMap(Map<String, dynamic> map) {
     return FoodItem(
       id: map['id'],
@@ -54,7 +54,7 @@ class FoodItem {
     );
   }
 
-  // 复制方法
+  // Copy method
   FoodItem copyWith({
     int? id,
     String? name,
@@ -80,14 +80,14 @@ class FoodItem {
   }
 }
 
-// 食物记录模型（用户每次Add的食物记录）
+// Food record model (user's food record for each entry)
 class FoodRecord {
   final int? id;
-  final int foodItemId; // 关联的食物ID
-  final FoodItem? foodItem; // 食物详情
-  final double quantity; // 数量
-  final double totalCalories; // 总卡路里
-  final String mealType; // 餐次：breakfast, lunch, dinner, snack
+  final int foodItemId; // Associated food ID
+  final FoodItem? foodItem; // Food details
+  final double quantity; // Quantity
+  final double totalCalories; // Total calories
+  final String mealType; // Meal type: breakfast, lunch, dinner, snack
   final DateTime recordedAt;
 
   FoodRecord({
@@ -100,11 +100,11 @@ class FoodRecord {
     DateTime? recordedAt,
   }) : recordedAt = recordedAt ?? DateTime.now();
 
-  // 获取格式化的日期（用于分组）
+  // Get formatted date (for grouping)
   DateTime get date =>
       DateTime(recordedAt.year, recordedAt.month, recordedAt.day);
 
-  // 转换为Map
+  // Convert to Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -116,7 +116,7 @@ class FoodRecord {
     };
   }
 
-  // 从Map创建FoodRecord
+  // Create FoodRecord from Map
   factory FoodRecord.fromMap(Map<String, dynamic> map, {FoodItem? foodItem}) {
     return FoodRecord(
       id: map['id'],
@@ -129,7 +129,7 @@ class FoodRecord {
     );
   }
 
-  // 复制方法
+  // Copy method
   FoodRecord copyWith({
     int? id,
     int? foodItemId,
@@ -151,13 +151,13 @@ class FoodRecord {
   }
 }
 
-// 每日卡路里数据模型（用于History Records和图表）
+// Daily calorie data model (for history records and charts)
 class DailyCalorieData {
   final DateTime date;
   final double totalCalories;
   final int foodCount;
-  final Map<String, double> mealBreakdown; // 各餐次卡路里分布
-  final Map<String, int> mealCounts; // 各餐次食物数量
+  final Map<String, double> mealBreakdown; // Calorie distribution by meal
+  final Map<String, int> mealCounts; // Food count by meal
 
   DailyCalorieData({
     required this.date,
@@ -167,7 +167,7 @@ class DailyCalorieData {
     required this.mealCounts,
   });
 
-  // 从食物记录列表创建每日数据
+  // Create daily data from food records list
   factory DailyCalorieData.fromFoodRecords(
       DateTime date, List<FoodRecord> records) {
     double totalCalories = 0;
@@ -200,7 +200,7 @@ class DailyCalorieData {
     );
   }
 
-  // 获取主要餐次（卡路里最多的餐次）
+  // Get primary meal (meal with most calories)
   String get primaryMeal {
     String primary = 'breakfast';
     double maxCalories = 0;
@@ -215,17 +215,17 @@ class DailyCalorieData {
     return primary;
   }
 
-  // 获取平均每餐卡路里
+  // Get average calories per meal
   double get averageCaloriesPerMeal {
     final activeMeals =
         mealBreakdown.values.where((calories) => calories > 0).length;
     return activeMeals > 0 ? totalCalories / activeMeals : 0;
   }
 
-  // 检查是否是活跃日（有食物记录）
+  // Check if it's an active day (has food records)
   bool get isActiveDay => foodCount > 0;
 
-  // 转换为Map（用于数据库或JSON）
+  // Convert to Map (for database or JSON)
   Map<String, dynamic> toMap() {
     return {
       'date': date.millisecondsSinceEpoch,
@@ -236,7 +236,7 @@ class DailyCalorieData {
     };
   }
 
-  // 从Map创建DailyCalorieData
+  // Create DailyCalorieData from Map
   factory DailyCalorieData.fromMap(Map<String, dynamic> map) {
     return DailyCalorieData(
       date: DateTime.fromMillisecondsSinceEpoch(map['date']),
@@ -248,7 +248,7 @@ class DailyCalorieData {
   }
 }
 
-// 营养统计数据模型
+// Nutrition statistics data model
 class NutritionStats {
   final double totalCalories;
   final double totalProtein;
@@ -264,25 +264,27 @@ class NutritionStats {
     required this.date,
   });
 
-  // 获取Protein卡路里百分比
+  // Get protein calorie percentage
   double get proteinPercentage {
     if (totalCalories == 0) return 0;
-    return (totalProtein * 4) / totalCalories * 100; // Protein每克4卡路里
+    return (totalProtein * 4) /
+        totalCalories *
+        100; // Protein 4 calories per gram
   }
 
-  // 获取碳水化合物卡路里百分比
+  // Get carbohydrate calorie percentage
   double get carbsPercentage {
     if (totalCalories == 0) return 0;
-    return (totalCarbs * 4) / totalCalories * 100; // 碳水每克4卡路里
+    return (totalCarbs * 4) / totalCalories * 100; // Carbs 4 calories per gram
   }
 
-  // 获取脂肪卡路里百分比
+  // Get fat calorie percentage
   double get fatPercentage {
     if (totalCalories == 0) return 0;
-    return (totalFat * 9) / totalCalories * 100; // 脂肪每克9卡路里
+    return (totalFat * 9) / totalCalories * 100; // Fat 9 calories per gram
   }
 
-  // 检查营养比例是否健康
+  // Check if nutrition ratio is healthy
   bool get isHealthyBalance {
     return proteinPercentage >= 10 &&
         proteinPercentage <= 35 &&
@@ -292,7 +294,7 @@ class NutritionStats {
         fatPercentage <= 35;
   }
 
-  // 转换为Map
+  // Convert to Map
   Map<String, dynamic> toMap() {
     return {
       'totalCalories': totalCalories,
@@ -303,7 +305,7 @@ class NutritionStats {
     };
   }
 
-  // 从Map创建NutritionStats
+  // Create NutritionStats from Map
   factory NutritionStats.fromMap(Map<String, dynamic> map) {
     return NutritionStats(
       totalCalories: map['totalCalories'].toDouble(),
@@ -315,7 +317,7 @@ class NutritionStats {
   }
 }
 
-// 目标达成统计模型
+// Goal achievement statistics model
 class GoalAchievementStats {
   final int totalDays;
   final int achievedDays;
@@ -333,25 +335,25 @@ class GoalAchievementStats {
     required this.targetCalories,
   });
 
-  // 达成率百分比
+  // Achievement rate percentage
   double get achievementRate {
     return totalDays > 0 ? (achievedDays / totalDays) * 100 : 0;
   }
 
-  // 平均与目标的差距
+  // Average gap from target
   double get averageGap {
     return averageCalories - targetCalories;
   }
 
-  // 获取达成等级
+  // Get achievement level
   String get achievementLevel {
-    if (achievementRate >= 90) return '优秀';
-    if (achievementRate >= 70) return '良好';
-    if (achievementRate >= 50) return '一般';
-    return '需要努力';
+    if (achievementRate >= 90) return 'Excellent';
+    if (achievementRate >= 70) return 'Good';
+    if (achievementRate >= 50) return 'Average';
+    return 'Needs Improvement';
   }
 
-  // 获取达成等级颜色
+  // Get achievement level color
   Color get achievementColor {
     if (achievementRate >= 90) return Colors.green;
     if (achievementRate >= 70) return Colors.blue;
@@ -359,4 +361,3 @@ class GoalAchievementStats {
     return Colors.red;
   }
 }
-

@@ -9,18 +9,18 @@ class DatabaseService {
   static const String _databaseName = 'calorie_tracker.db';
   static const int _databaseVersion = 1;
 
-  // 表名
+  // Table names
   static const String _userProfileTable = 'user_profiles';
   static const String _foodRecordsTable = 'food_records';
 
-  // 获取数据库实例
+  // Get database instance
   static Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  // 初始化数据库
+  // Initialize database
   static Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), _databaseName);
 
@@ -31,9 +31,9 @@ class DatabaseService {
     );
   }
 
-  // 创建数据库表
+  // Create database tables
   static Future<void> _createDatabase(Database db, int version) async {
-    // 创建用户资料表
+    // Create user profile table
     await db.execute('''
       CREATE TABLE $_userProfileTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,7 +48,7 @@ class DatabaseService {
       )
     ''');
 
-    // 创建食物记录表
+    // Create food records table
     await db.execute('''
       CREATE TABLE $_foodRecordsTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,20 +65,20 @@ class DatabaseService {
     ''');
   }
 
-  // ========== 用户资料相关方法 ==========
+  // ========== User Profile Methods ==========
 
-  // Save用户资料
+  // Save user profile
   static Future<int> saveUserProfile(UserProfile profile) async {
     final db = await database;
 
-    // 先Delete现有的用户资料（假设只有一个用户）
+    // Delete existing user profile first (assuming single user)
     await db.delete(_userProfileTable);
 
-    // 插入新的用户资料
+    // Insert new user profile
     return await db.insert(_userProfileTable, profile.toMap());
   }
 
-  // 获取用户资料
+  // Get user profile
   static Future<UserProfile?> getUserProfile() async {
     final db = await database;
 
@@ -93,13 +93,13 @@ class DatabaseService {
     return null;
   }
 
-  // ========== 食物记录相关方法 ==========
+  // ========== Food Record Methods ==========
 
-  // Save食物记录
+  // Save food record
   static Future<int> saveFoodRecord(FoodRecord record) async {
     final db = await database;
 
-    // 转换为数据库格式
+    // Convert to database format
     final recordMap = {
       'foodName': record.foodItem?.name ?? '',
       'foodUnit': record.foodItem?.unit ?? '',
@@ -115,7 +115,7 @@ class DatabaseService {
     return await db.insert(_foodRecordsTable, recordMap);
   }
 
-  // 获取指定日期的食物记录
+  // Get food records by date
   static Future<List<FoodRecord>> getFoodRecordsByDate(DateTime date) async {
     final db = await database;
     final dateString = _formatDate(date);
@@ -130,12 +130,12 @@ class DatabaseService {
     return maps.map((map) => _mapToFoodRecord(map)).toList();
   }
 
-  // 获取今日食物记录
+  // Get today's food records
   static Future<List<FoodRecord>> getTodayFoodRecords() async {
     return await getFoodRecordsByDate(DateTime.now());
   }
 
-  // Delete食物记录
+  // Delete food record
   static Future<int> deleteFoodRecord(int id) async {
     final db = await database;
     return await db.delete(
@@ -145,7 +145,7 @@ class DatabaseService {
     );
   }
 
-  // 获取最近7天的食物记录
+  // Get recent food records (last 7 days)
   static Future<List<FoodRecord>> getRecentFoodRecords() async {
     final db = await database;
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
@@ -160,9 +160,9 @@ class DatabaseService {
     return maps.map((map) => _mapToFoodRecord(map)).toList();
   }
 
-  // ========== 新增：历史数据和统计方法 ==========
+  // ========== New: Historical Data and Statistics Methods ==========
 
-  // 获取指定天数的每日卡路里数据
+  // Get daily calorie data for specified number of days
   static Future<List<DailyCalorieData>> getWeeklyCalorieData(int days) async {
     final db = await database;
     final now = DateTime.now();
@@ -175,7 +175,7 @@ class DatabaseService {
       final date = startDate.add(Duration(days: i));
       final dateString = _formatDate(date);
 
-      // 获取当日所有食物记录
+      // Get all food records for the day
       final List<Map<String, dynamic>> records = await db.query(
         _foodRecordsTable,
         where: 'recordedDate = ?',
@@ -217,7 +217,7 @@ class DatabaseService {
     return result;
   }
 
-  // 获取目标达成统计
+  // Get goal achievement statistics
   static Future<GoalAchievementStats> getGoalAchievementStats(
       double dailyTarget, int days) async {
     final weeklyData = await getWeeklyCalorieData(days);
@@ -230,7 +230,7 @@ class DatabaseService {
 
     if (totalDays > 0) {
       for (var day in weeklyData) {
-        // 目标达成标准：在目标的80%-120%范围内
+        // Goal achievement criteria: within 80%-120% of target
         if (day.totalCalories >= dailyTarget * 0.8 &&
             day.totalCalories <= dailyTarget * 1.2) {
           achievedDays++;
@@ -260,10 +260,7 @@ class DatabaseService {
     );
   }
 
-  // 获取营养成分统计
-  // 在 database_service.dart 中替换 getNutritionStatistics 方法
-
-// 获取营养成分统计
+  // Get nutrition statistics
   static Future<NutritionStats> getNutritionStatistics(DateTime date) async {
     final db = await database;
     final dateString = _formatDate(date);
@@ -279,26 +276,26 @@ class DatabaseService {
     double totalFat = 0;
     double totalCalories = 0;
 
-    // 根据实际食物数据计算营养成分
+    // Calculate nutrition based on actual food data
     for (var record in records) {
       totalCalories += record['totalCalories'] as double;
       final quantity = record['quantity'] as double;
       final category = record['foodCategory'] as String;
       final foodName = record['foodName'] as String;
 
-      // 根据食物类别和名称更精确地估算营养成分（每100g的营养成分）
+      // Get more accurate nutrition estimation based on food category and name (per 100g)
       Map<String, double> nutritionPer100g =
           _getNutritionDataPer100g(foodName, category);
 
-      // 计算实际营养成分（根据实际食用量）
+      // Calculate actual nutrition (based on actual consumption)
       double actualQuantity = quantity;
 
-      // 如果单位是ml，按照密度换算（简化处理，大部分液体密度接近1）
+      // If unit is ml, convert by density (simplified, most liquids density ≈ 1)
       if (record['foodUnit'] == 'ml') {
-        actualQuantity = quantity; // ml和g近似相等
+        actualQuantity = quantity; // ml and g approximately equal
       }
 
-      // 按比例计算营养成分
+      // Calculate nutrition proportionally
       totalProtein += (nutritionPer100g['protein']! * actualQuantity / 100);
       totalCarbs += (nutritionPer100g['carbs']! * actualQuantity / 100);
       totalFat += (nutritionPer100g['fat']! * actualQuantity / 100);
@@ -313,10 +310,10 @@ class DatabaseService {
     );
   }
 
-// 获取食物的营养数据（每100g）
+  // Get nutrition data for food (per 100g)
   static Map<String, double> _getNutritionDataPer100g(
       String foodName, String category) {
-    // 具体食物的营养数据
+    // Specific food nutrition data
     final specificFoodData = {
       'Rice': {'protein': 2.7, 'carbs': 28.0, 'fat': 0.3},
       'Noodles': {'protein': 11.0, 'carbs': 55.0, 'fat': 1.1},
@@ -337,12 +334,12 @@ class DatabaseService {
       'Cola': {'protein': 0.0, 'carbs': 10.6, 'fat': 0.0},
     };
 
-    // 如果有具体食物数据，使用具体数据
+    // If specific food data exists, use it
     if (specificFoodData.containsKey(foodName)) {
       return specificFoodData[foodName]!;
     }
 
-    // 否则根据食物类别估算（每100g的营养成分）
+    // Otherwise estimate based on food category (per 100g nutrition)
     switch (category) {
       case 'Protein':
         return {'protein': 25.0, 'carbs': 2.0, 'fat': 8.0};
@@ -361,7 +358,7 @@ class DatabaseService {
     }
   }
 
-  // 获取最常吃的食物
+  // Get most frequently eaten foods
   static Future<List<Map<String, dynamic>>> getMostFrequentFoods(
       {int limit = 10}) async {
     final db = await database;
@@ -383,7 +380,7 @@ class DatabaseService {
     return result;
   }
 
-  // 获取卡路里摄入趋势
+  // Get calorie intake trend
   static Future<List<Map<String, dynamic>>> getCalorieTrend(int days) async {
     final db = await database;
     final startDate = DateTime.now().subtract(Duration(days: days));
@@ -403,7 +400,7 @@ class DatabaseService {
     return result;
   }
 
-  // 获取餐次分布统计
+  // Get meal type distribution statistics
   static Future<Map<String, double>> getMealTypeDistribution(int days) async {
     final db = await database;
     final startDate = DateTime.now().subtract(Duration(days: days));
@@ -426,7 +423,7 @@ class DatabaseService {
     return distribution;
   }
 
-  // 获取食物类别分布
+  // Get food category distribution
   static Future<Map<String, double>> getFoodCategoryDistribution(
       int days) async {
     final db = await database;
@@ -450,7 +447,7 @@ class DatabaseService {
     return distribution;
   }
 
-  // 获取指定日期范围的卡路里统计
+  // Get calorie statistics for specified date range
   static Future<Map<String, double>> getCalorieStatistics(
     DateTime startDate,
     DateTime endDate,
@@ -478,7 +475,7 @@ class DatabaseService {
     return statistics;
   }
 
-  // 获取数据库概览统计
+  // Get database overview statistics
   static Future<Map<String, dynamic>> getDatabaseOverview() async {
     final db = await database;
 
@@ -513,16 +510,16 @@ class DatabaseService {
     };
   }
 
-  // ========== 辅助方法 ==========
+  // ========== Helper Methods ==========
 
-  // 格式化日期为字符串 (YYYY-MM-DD)
+  // Format date to string (YYYY-MM-DD)
   static String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
-  // 将数据库Map转换为FoodRecord对象
+  // Convert database Map to FoodRecord object
   static FoodRecord _mapToFoodRecord(Map<String, dynamic> map) {
-    // 重建FoodItem对象
+    // Rebuild FoodItem object
     final foodItem = FoodItem(
       name: map['foodName'],
       unit: map['foodUnit'],
@@ -532,7 +529,7 @@ class DatabaseService {
 
     return FoodRecord(
       id: map['id'],
-      foodItemId: 0, // 数据库中不存储foodItemId
+      foodItemId: 0, // foodItemId not stored in database
       foodItem: foodItem,
       quantity: map['quantity'],
       totalCalories: map['totalCalories'],
@@ -541,14 +538,14 @@ class DatabaseService {
     );
   }
 
-  // 清除所有数据（用于测试或重置）
+  // Clear all data (for testing or reset)
   static Future<void> clearAllData() async {
     final db = await database;
     await db.delete(_userProfileTable);
     await db.delete(_foodRecordsTable);
   }
 
-  // 关闭数据库连接
+  // Close database connection
   static Future<void> closeDatabase() async {
     if (_database != null) {
       await _database!.close();
@@ -556,7 +553,7 @@ class DatabaseService {
     }
   }
 
-  // 获取数据库统计信息
+  // Get database statistics
   static Future<Map<String, int>> getDatabaseStats() async {
     final db = await database;
 
@@ -574,4 +571,3 @@ class DatabaseService {
     };
   }
 }
-

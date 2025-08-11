@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<FoodRecord> todayFoodRecords = [];
   bool isLoading = true;
 
-  // 推荐相关变量
+  // Recommendation related variables
   List<String> _quickRecommendations = [];
   bool _isLoadingRecommendations = false;
 
@@ -60,13 +60,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializeApp();
   }
 
-  // 计算当前卡路里摄入
+  // Calculate current calorie intake
   double get currentCalorieIntake {
     return todayFoodRecords.fold(
         0.0, (sum, record) => sum + record.totalCalories);
   }
 
-  // 获取今日营养摘要
+  // Get today's nutrition summary
   Map<String, double> get todayNutritionSummary {
     double protein = 0, carbs = 0, fat = 0;
 
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final quantity = record.quantity;
       final category = record.foodItem?.category ?? '';
 
-      // 根据食物类别估算营养成分
+      // Estimate nutrition based on food category
       switch (category) {
         case 'Protein':
           protein += quantity * 0.25;
@@ -106,14 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return {'protein': protein, 'carbs': carbs, 'fat': fat};
   }
 
-  // 初始化应用
+  // Initialize app
   Future<void> _initializeApp() async {
     await _loadUserData();
     await _loadTodayFoodRecords();
     _loadQuickRecommendations();
   }
 
-  // 加载用户数据
+  // Load user data
   Future<void> _loadUserData() async {
     try {
       final savedUser = await DatabaseService.getUserProfile();
@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (savedUser != null) {
         currentUser = savedUser;
       } else {
-        // 创建默认用户
+        // Create default user
         currentUser = UserProfile(
           name: 'User',
           age: 25,
@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       _handleError('Failed to load user data', e);
-      // 使用默认用户数据
+      // Use default user data
       currentUser = UserProfile(
         name: 'User',
         age: 25,
@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 加载今日食物记录
+  // Load today's food records
   Future<void> _loadTodayFoodRecords() async {
     try {
       final records = await DatabaseService.getTodayFoodRecords();
@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 加载快速推荐
+  // Load quick recommendations
   Future<void> _loadQuickRecommendations() async {
     if (currentUser == null) return;
 
@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 添加食物记录
+  // Add food record
   Future<void> _addFoodRecord(FoodRecord record) async {
     try {
       await DatabaseService.saveFoodRecord(record);
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => todayFoodRecords.add(record));
         _showSuccessMessage(
             'Added ${record.foodItem?.name} (${record.totalCalories.round()} calories)');
-        // 重新加载推荐
+        // Reload recommendations
         _loadQuickRecommendations();
       }
     } catch (e) {
@@ -203,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 删除食物记录
+  // Delete food record
   Future<void> _removeFoodRecord(int index) async {
     try {
       final record = todayFoodRecords[index];
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => todayFoodRecords.removeAt(index));
         _showInfoMessage('Food record deleted');
-        // 重新加载推荐
+        // Reload recommendations
         _loadQuickRecommendations();
       }
     } catch (e) {
@@ -223,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 更新用户资料
+  // Update user profile
   Future<void> _updateUserProfile(UserProfile newProfile) async {
     try {
       await DatabaseService.saveUserProfile(newProfile);
@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() => currentUser = newProfile);
         _showSuccessMessage('Profile saved');
-        // 重新加载推荐
+        // Reload recommendations
         _loadQuickRecommendations();
       }
     } catch (e) {
@@ -239,10 +239,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 快速添加推荐食物
+  // Quick add recommended food
   void _quickAddRecommendedFood(String foodName) {
     try {
-      // 从食物数据库找到对应食物
+      // Find corresponding food from database
       final allFoods = FoodDatabaseService.getAllFoods();
       final food = allFoods.firstWhere(
         (f) => f.name == foodName,
@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 导航方法
+  // Navigation methods
   void _navigateToAddFood() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 根据时间智能选择餐次
+  // Intelligently select meal type based on time
   String _getMealTypeFromTime() {
     final hour = DateTime.now().hour;
     if (hour < 10) return 'breakfast';
@@ -328,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'dinner';
   }
 
-  // 消息提示方法
+  // Message prompt methods
   void _showSuccessMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -379,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _showErrorMessage('$message, please try again');
   }
 
-  // 调试功能
+  // Debug functionality
   Future<void> _clearAllData() async {
     final confirmed =
         await _showConfirmDialog('Are you sure you want to clear all data?');
@@ -446,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildQuickStatsCard(targetCalories, nutritionSummary),
             const SizedBox(height: 20),
 
-            // 智能推荐卡片
+            // Smart recommendation card
             _buildQuickRecommendationCard(),
             const SizedBox(height: 20),
 
@@ -536,9 +536,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
-
-  // ... 其他widget方法保持原样，但需要将中文替换为英文
-  // 这里我先提供几个主要的，其他的可以用同样的方式处理
 
   Widget _buildWelcomeCard() {
     return Card(
@@ -700,11 +697,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 需要继续实现其他widget方法...
-  // 为了节省篇幅，我提供核心框架，其他方法可以类似处理
-
   Widget _buildQuickRecommendationCard() {
-    // 简化版本，您可以根据需要展开
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -885,7 +878,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 辅助方法
+  // Helper methods
   String _getMealTypeName(String mealType) {
     switch (mealType) {
       case 'breakfast':

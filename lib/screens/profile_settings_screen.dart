@@ -70,7 +70,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('个人资料已更新！'),
+          content: Text('Profile updated successfully!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -81,8 +81,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('重置确认'),
-        content: const Text('Confirm要重置所有Settings吗？'),
+        title: const Text('Reset Confirmation'),
+        content: const Text('Are you sure you want to reset all settings?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -92,7 +92,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               setState(() {
-                _nameController.text = '张三';
+                _nameController.text = 'John Doe';
                 _ageController.text = '25';
                 _heightController.text = '175';
                 _weightController.text = '70';
@@ -109,7 +109,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 实时计算预览数据
+    // Real-time preview calculation
     double? previewBMR;
     double? previewTDEE;
 
@@ -131,7 +131,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         );
       }
     } catch (e) {
-      // 忽略计算错误
+      // Ignore calculation errors
     }
 
     return Scaffold(
@@ -151,7 +151,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 个人信息卡片
+              // Basic information card
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -176,7 +176,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '请输入Name';
+                            return 'Please enter your name';
                           }
                           return null;
                         },
@@ -191,16 +191,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           labelText: 'Age',
                           prefixIcon: Icon(Icons.cake),
                           border: OutlineInputBorder(),
-                          suffixText: '岁',
+                          suffixText: 'years',
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入Age';
+                            return 'Please enter your age';
                           }
                           final age = int.tryParse(value);
                           if (age == null || age < 10 || age > 120) {
-                            return 'Age应在10-120岁之间';
+                            return 'Age should be between 10-120 years';
                           }
                           return null;
                         },
@@ -209,7 +209,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Gender选择
+                      // Gender selection
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -252,7 +252,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // 身体数据卡片
+              // Body measurements card
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -260,7 +260,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '身体数据',
+                        'Body Measurements',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -276,14 +276,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           border: OutlineInputBorder(),
                           suffixText: 'cm',
                         ),
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入Height';
+                            return 'Please enter your height';
                           }
                           final height = double.tryParse(value);
                           if (height == null || height < 100 || height > 250) {
-                            return 'Height应在100-250cm之间';
+                            return 'Height should be between 100-250cm';
                           }
                           return null;
                         },
@@ -301,14 +302,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           border: OutlineInputBorder(),
                           suffixText: 'kg',
                         ),
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return '请输入Weight';
+                            return 'Please enter your weight';
                           }
                           final weight = double.tryParse(value);
                           if (weight == null || weight < 30 || weight > 300) {
-                            return 'Weight应在30-300kg之间';
+                            return 'Weight should be between 30-300kg';
                           }
                           return null;
                         },
@@ -321,7 +323,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // 活动水平卡片
+              // Activity level card
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -329,7 +331,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '活动水平',
+                        'Activity Level',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -361,7 +363,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // 预览计算结果
+              // Preview calculation results
               if (previewBMR != null && previewTDEE != null) ...[
                 Card(
                   color: Colors.blue.shade50,
@@ -375,7 +377,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             Icon(Icons.preview, color: Colors.blue.shade700),
                             const SizedBox(width: 8),
                             Text(
-                              '预览计算结果',
+                              'Preview Calculation Results',
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -388,17 +390,23 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         ),
                         const SizedBox(height: 12),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildPreviewItem(
-                                '基础代谢率 (BMR)', '${previewBMR.round()} kcal'),
-                            _buildPreviewItem(
-                                '每日消耗 (TDEE)', '${previewTDEE.round()} kcal'),
+                            Expanded(
+                              child: _buildPreviewItem(
+                                  'Basal Metabolic Rate (BMR)',
+                                  '${previewBMR.round()} kcal'),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildPreviewItem(
+                                  'Total Daily Energy Expenditure (TDEE)',
+                                  '${previewTDEE.round()} kcal'),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '这将是你的新卡路里目标',
+                          'This will be your new calorie target',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue.shade600,
@@ -412,20 +420,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 const SizedBox(height: 16),
               ],
 
-              // 操作按钮
+              // Action buttons
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _resetToDefaults,
-                      child: const Text('重置默认'),
+                      child: const Text('Reset to Default'),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _saveProfile,
-                      child: const Text('SaveSettings'),
+                      child: const Text('Save Settings'),
                     ),
                   ),
                 ],
@@ -463,4 +471,3 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 }
-

@@ -14,30 +14,30 @@ class QuickAddService {
   static const String _templatesKey = 'meal_templates';
   static const String _templateKeysKey = 'meal_template_keys';
 
-  // ===== 收藏夹功能 =====
+  // ===== Favorites functionality =====
 
-  // Add到收藏夹
+  // Add to favorites
   Future<void> addToFavorites(String foodName) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> favorites = prefs.getStringList(_favoritesKey) ?? [];
 
     if (!favorites.contains(foodName)) {
-      favorites.insert(0, foodName); // Add到开头
+      favorites.insert(0, foodName); // Add to beginning
       if (favorites.length > 20) {
-        // 最多Save20个
+        // Save maximum 20 items
         favorites = favorites.take(20).toList();
       }
       await prefs.setStringList(_favoritesKey, favorites);
     }
   }
 
-  // 获取收藏夹
+  // Get favorites
   Future<List<String>> getFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(_favoritesKey) ?? [];
   }
 
-  // 从收藏夹移除
+  // Remove from favorites
   Future<void> removeFromFavorites(String foodName) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> favorites = prefs.getStringList(_favoritesKey) ?? [];
@@ -45,20 +45,20 @@ class QuickAddService {
     await prefs.setStringList(_favoritesKey, favorites);
   }
 
-  // 检查是否在收藏夹中
+  // Check if is favorite
   Future<bool> isFavorite(String foodName) async {
     final favorites = await getFavorites();
     return favorites.contains(foodName);
   }
 
-  // ===== 最近Add功能 =====
+  // ===== Recent foods functionality =====
 
-  // 获取最近Add的食物
+  // Get recently added foods
   Future<List<String>> getRecentFoods({int days = 7}) async {
     try {
       final records = await DatabaseService.getRecentFoodRecords();
 
-      // 按频率和时间排序
+      // Sort by frequency and time
       Map<String, int> foodCount = {};
       Map<String, DateTime> lastEaten = {};
 
@@ -78,7 +78,7 @@ class QuickAddService {
         }
       }
 
-      // 按综合评分排序（频率 + 最近程度）
+      // Sort by combined score (frequency + recency)
       var sortedFoods = foodCount.entries.toList();
       sortedFoods.sort((a, b) {
         final aScore = a.value * 10 +
@@ -90,14 +90,14 @@ class QuickAddService {
 
       return sortedFoods.take(10).map((e) => e.key).toList();
     } catch (e) {
-      print('获取最近食物失败: $e');
+      print('Failed to get recent foods: $e');
       return [];
     }
   }
 
-  // ===== 智能Search功能 =====
+  // ===== Smart search functionality =====
 
-  // 智能Search食物
+  // Smart search foods
   List<FoodItem> smartSearch(String query, List<FoodItem> allFoods) {
     if (query.isEmpty) return allFoods;
 
@@ -112,41 +112,41 @@ class QuickAddService {
       }
     }
 
-    // 按分数排序
+    // Sort by score
     results.sort((a, b) => b.score.compareTo(a.score));
 
     return results.map((r) => r.food).toList();
   }
 
-  // 计算Search评分
+  // Calculate search score
   int _calculateSearchScore(FoodItem food, String query) {
     String foodName = food.name.toLowerCase();
     String category = food.category.toLowerCase();
 
-    // 1. 完全匹配 - 最高分
+    // 1. Exact match - highest score
     if (foodName == query) return 100;
 
-    // 2. 开头匹配 - 高分
+    // 2. Starts with match - high score
     if (foodName.startsWith(query)) return 90;
 
-    // 3. 包含匹配 - 中高分
+    // 3. Contains match - medium-high score
     if (foodName.contains(query)) return 80;
 
-    // 4. 拼音首字母匹配 - 中分
+    // 4. Pinyin first letter match - medium score
     if (_pinyinMatch(foodName, query)) return 70;
 
-    // 5. 类别匹配 - 中低分
+    // 5. Category match - medium-low score
     if (category.contains(query)) return 50;
 
-    // 6. 模糊匹配 - 低分
+    // 6. Fuzzy match - low score
     if (_fuzzyMatch(foodName, query)) return 30;
 
     return 0;
   }
 
-  // 简化的拼音匹配
+  // Simplified pinyin matching
   bool _pinyinMatch(String foodName, String query) {
-    // 常用食物的拼音首字母映射
+    // Common food pinyin first letter mapping
     Map<String, List<String>> pinyinMap = {
       'Apple': ['pg', 'pingguo'],
       'Banana': ['xj', 'xiangjiao'],
@@ -160,14 +160,14 @@ class QuickAddService {
       'Noodles': ['mt', 'miantiao'],
       'Bread': ['mb', 'mianbao'],
       'Fish': ['yr', 'yurou'],
-      '西瓜': ['xg', 'xigua'],
+      'Watermelon': ['xg', 'xigua'],
       'Orange': ['cz', 'chengzi'],
-      '葡萄': ['pt', 'putao'],
-      '草莓': ['cm', 'caomei'],
-      '猪肉': ['zr', 'zhurou'],
-      '土豆': ['td', 'tudou'],
-      '白菜': ['bc', 'baicai'],
-      '菠菜': ['bc', 'bocai'],
+      'Grape': ['pt', 'putao'],
+      'Strawberry': ['cm', 'caomei'],
+      'Pork': ['zr', 'zhurou'],
+      'Potato': ['td', 'tudou'],
+      'Cabbage': ['bc', 'baicai'],
+      'Spinach': ['bc', 'bocai'],
       'Milk': ['nn', 'niunai'],
     };
 
@@ -179,9 +179,9 @@ class QuickAddService {
     return false;
   }
 
-  // 模糊匹配
+  // Fuzzy matching
   bool _fuzzyMatch(String foodName, String query) {
-    // 简单的模糊匹配：检查query中的字符是否都在foodName中出现
+    // Simple fuzzy matching: check if all characters in query appear in foodName
     if (query.length < 2) return false;
 
     int matchCount = 0;
@@ -191,12 +191,12 @@ class QuickAddService {
       }
     }
 
-    return matchCount >= query.length * 0.7; // 70%的字符匹配
+    return matchCount >= query.length * 0.7; // 70% character match
   }
 
-  // ===== 餐次模板功能 =====
+  // ===== Meal template functionality =====
 
-  // Save餐次模板
+  // Save meal template
   Future<void> saveMealTemplate(
       String templateName, List<FoodRecord> foods) async {
     final prefs = await SharedPreferences.getInstance();
@@ -216,21 +216,21 @@ class QuickAddService {
       'createdAt': DateTime.now().toIso8601String(),
     };
 
-    // 获取现有模板键
+    // Get existing template keys
     List<String> templateKeys = prefs.getStringList(_templateKeysKey) ?? [];
 
-    // Save新模板
+    // Save new template
     String templateKey = 'meal_template_$templateName';
     await prefs.setString(templateKey, jsonEncode(template));
 
-    // 更新模板键列表
+    // Update template keys list
     if (!templateKeys.contains(templateKey)) {
       templateKeys.add(templateKey);
       await prefs.setStringList(_templateKeysKey, templateKeys);
     }
   }
 
-  // 获取所有餐次模板
+  // Get all meal templates
   Future<List<MealTemplate>> getAllTemplates() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> templateKeys = prefs.getStringList(_templateKeysKey) ?? [];
@@ -243,18 +243,18 @@ class QuickAddService {
           Map<String, dynamic> data = jsonDecode(templateData);
           templates.add(MealTemplate.fromMap(data));
         } catch (e) {
-          print('解析模板失败: $e');
+          print('Failed to parse template: $e');
         }
       }
     }
 
-    // 按创建时间排序（最新的在前面）
+    // Sort by creation time (newest first)
     templates.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return templates;
   }
 
-  // Delete餐次模板
+  // Delete meal template
   Future<void> deleteMealTemplate(String templateName) async {
     final prefs = await SharedPreferences.getInstance();
     String templateKey = 'meal_template_$templateName';
@@ -266,7 +266,7 @@ class QuickAddService {
     await prefs.setStringList(_templateKeysKey, templateKeys);
   }
 
-  // 应用餐次模板
+  // Apply meal template
   Future<List<FoodRecord>> applyTemplate(
       String templateName, String mealType) async {
     final prefs = await SharedPreferences.getInstance();
@@ -286,7 +286,7 @@ class QuickAddService {
           name: foodData['foodName'] ?? '',
           caloriesPerUnit: foodData['caloriesPerUnit']?.toDouble() ?? 1.0,
           unit: foodData['unit'] ?? 'g',
-          category: foodData['category'] ?? '其他',
+          category: foodData['category'] ?? 'Other',
         );
 
         final quantity = foodData['quantity']?.toDouble() ?? 100.0;
@@ -304,36 +304,36 @@ class QuickAddService {
 
       return records;
     } catch (e) {
-      print('应用模板失败: $e');
+      print('Failed to apply template: $e');
       return [];
     }
   }
 
-  // ===== 快速数量建议 =====
+  // ===== Quick quantity suggestions =====
 
-  // 获取常用数量建议
+  // Get common quantity suggestions
   List<double> getQuantitySuggestions(FoodItem food) {
-    // 根据食物类别返回常用数量
+    // Return common quantities based on food category
     switch (food.category) {
       case 'Staple Food':
-        return [100, 150, 200, 250]; // Staple Food量较大
+        return [100, 150, 200, 250]; // Staple foods in larger quantities
       case 'Protein':
-        return [50, 100, 150, 200]; // Protein适中
+        return [50, 100, 150, 200]; // Protein in moderate amounts
       case 'Vegetables':
-        return [100, 200, 300, 400]; // Vegetables可以多吃
+        return [100, 200, 300, 400]; // Vegetables can be eaten more
       case 'Fruits':
-        return [100, 150, 200, 250]; // Fruits适中
+        return [100, 150, 200, 250]; // Fruits in moderate amounts
       case 'Snacks':
-        return [20, 30, 50, 100]; // Snacks要少
+        return [20, 30, 50, 100]; // Snacks should be limited
       case 'Beverages':
-        return [200, 250, 300, 500]; // Beverages以ml计
+        return [200, 250, 300, 500]; // Beverages in ml
       default:
         return [50, 100, 150, 200];
     }
   }
 }
 
-// Search结果辅助类
+// Search result helper class
 class _SearchResult {
   final FoodItem food;
   final int score;
@@ -341,7 +341,7 @@ class _SearchResult {
   _SearchResult(this.food, this.score);
 }
 
-// 餐次模板数据模型
+// Meal template data model
 class MealTemplate {
   final String name;
   final List<Map<String, dynamic>> foods;
@@ -374,4 +374,3 @@ class MealTemplate {
     };
   }
 }
-

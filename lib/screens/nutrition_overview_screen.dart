@@ -41,14 +41,15 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
   }
 
   void _initializeNutritionGoals() {
-    // 根据用户信息计算推荐的营养目标
+    // Calculate recommended nutrition goals based on user information
     final tdee = widget.userProfile.calculateTDEE();
 
     nutritionGoals = {
       'calories': tdee,
-      'protein': widget.userProfile.weight * 1.2, // 每公斤Weight1.2gProtein
-      'carbs': tdee * 0.5 / 4, // 50%来自碳水化合物，每克4卡路里
-      'fat': tdee * 0.3 / 9, // 30%来自脂肪，每克9卡路里
+      'protein':
+          widget.userProfile.weight * 1.2, // 1.2g protein per kg body weight
+      'carbs': tdee * 0.5 / 4, // 50% from carbohydrates, 4 calories per gram
+      'fat': tdee * 0.3 / 9, // 30% from fat, 9 calories per gram
     };
   }
 
@@ -65,7 +66,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
         todayNutrition = nutrition;
       });
     } catch (e) {
-      print('加载营养数据失败: $e');
+      print('Failed to load nutrition data: $e');
     } finally {
       setState(() => isLoading = false);
     }
@@ -81,8 +82,8 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(icon: Icon(Icons.pie_chart), text: '今日营养'),
-            Tab(icon: Icon(Icons.trending_up), text: '营养趋势'),
+            Tab(icon: Icon(Icons.pie_chart), text: 'Today\'s Nutrition'),
+            Tab(icon: Icon(Icons.trending_up), text: 'Nutrition Trends'),
           ],
         ),
       ),
@@ -108,19 +109,19 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 营养成分饼图
+          // Nutrition composition pie chart
           _buildNutritionPieChart(),
           const SizedBox(height: 20),
 
-          // 营养目标进度
+          // Nutrition goal progress
           _buildNutritionProgress(),
           const SizedBox(height: 20),
 
-          // 营养建议
+          // Nutrition advice
           _buildNutritionAdvice(),
           const SizedBox(height: 20),
 
-          // 今日食物分解
+          // Today's food breakdown
           _buildTodayFoodBreakdown(),
         ],
       ),
@@ -131,15 +132,15 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // 7天营养趋势
+        // 7-day nutrition trends
         _build7DayNutritionTrend(),
         const SizedBox(height: 20),
 
-        // 营养平衡评分
+        // Nutrition balance score
         _buildNutritionScore(),
         const SizedBox(height: 20),
 
-        // 改善建议
+        // Improvement suggestions
         _buildImprovementSuggestions(),
       ],
     );
@@ -157,7 +158,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           ),
           const SizedBox(height: 16),
           Text(
-            '今天还没有食物记录',
+            'No food records for today',
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey.shade600,
@@ -166,7 +167,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Add一些食物来查看Nutrition Analysis',
+            'Add some foods to view nutrition analysis',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade500,
@@ -189,7 +190,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                 Icon(Icons.pie_chart, color: Colors.purple.shade600, size: 24),
                 const SizedBox(width: 8),
                 const Text(
-                  '营养成分分布',
+                  'Nutrition Composition',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -203,7 +204,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
               height: 200,
               child: Row(
                 children: [
-                  // 饼图
+                  // Pie chart
                   Expanded(
                     flex: 3,
                     child: PieChart(
@@ -216,7 +217,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                     ),
                   ),
 
-                  // 图例
+                  // Legend
                   Expanded(
                     flex: 2,
                     child: Column(
@@ -226,13 +227,13 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                         _buildLegendItem('Protein', Colors.red,
                             todayNutrition!.totalProtein, 'g'),
                         const SizedBox(height: 12),
-                        _buildLegendItem('碳水化合物', Colors.amber,
+                        _buildLegendItem('Carbohydrates', Colors.amber,
                             todayNutrition!.totalCarbs, 'g'),
                         const SizedBox(height: 12),
-                        _buildLegendItem(
-                            '脂肪', Colors.purple, todayNutrition!.totalFat, 'g'),
+                        _buildLegendItem('Fat', Colors.purple,
+                            todayNutrition!.totalFat, 'g'),
                         const SizedBox(height: 12),
-                        _buildLegendItem('总卡路里', Colors.green,
+                        _buildLegendItem('Total Calories', Colors.green,
                             todayNutrition!.totalCalories, 'kcal'),
                       ],
                     ),
@@ -243,7 +244,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
 
             const SizedBox(height: 16),
 
-            // 营养比例显示
+            // Nutrition ratio display
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -261,14 +262,14 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                         todayNutrition!.proteinPercentage, 10, 35),
                   ),
                   _buildPercentageItem(
-                    '碳水',
+                    'Carbs',
                     '${todayNutrition!.carbsPercentage.round()}%',
                     Colors.amber,
                     _isHealthyPercentage(
                         todayNutrition!.carbsPercentage, 45, 65),
                   ),
                   _buildPercentageItem(
-                    '脂肪',
+                    'Fat',
                     '${todayNutrition!.fatPercentage.round()}%',
                     Colors.purple,
                     _isHealthyPercentage(todayNutrition!.fatPercentage, 20, 35),
@@ -292,7 +293,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
       return [
         PieChartSectionData(
           value: 1,
-          title: '暂无数据',
+          title: 'No Data',
           color: Colors.grey,
           radius: 60,
         ),
@@ -421,7 +422,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                     color: Colors.green.shade600, size: 24),
                 const SizedBox(width: 8),
                 const Text(
-                  '营养目标达成情况',
+                  'Nutrition Goal Progress',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -431,7 +432,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 16),
             _buildProgressBar(
-              '卡路里',
+              'Calories',
               todayNutrition!.totalCalories,
               nutritionGoals['calories']!,
               'kcal',
@@ -447,7 +448,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 12),
             _buildProgressBar(
-              '碳水化合物',
+              'Carbohydrates',
               todayNutrition!.totalCarbs,
               nutritionGoals['carbs']!,
               'g',
@@ -455,7 +456,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 12),
             _buildProgressBar(
-              '脂肪',
+              'Fat',
               todayNutrition!.totalFat,
               nutritionGoals['fat']!,
               'g',
@@ -511,25 +512,29 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
     List<String> advice = [];
 
     if (todayNutrition!.proteinPercentage < 10) {
-      advice.add('Protein摄入偏低，建议增加Chicken Breast、鱼类或豆类');
+      advice.add(
+          'Protein intake is low, consider adding chicken breast, fish, or beans');
     } else if (todayNutrition!.proteinPercentage > 35) {
-      advice.add('Protein摄入过高，注意营养平衡');
+      advice.add('Protein intake is high, maintain nutritional balance');
     }
 
     if (todayNutrition!.carbsPercentage < 45) {
-      advice.add('碳水化合物偏低，适量增加全谷物和Fruits');
+      advice.add(
+          'Carbohydrate intake is low, add whole grains and fruits moderately');
     } else if (todayNutrition!.carbsPercentage > 65) {
-      advice.add('碳水化合物过高，减少精制糖和加工食品');
+      advice.add(
+          'Carbohydrate intake is high, reduce refined sugars and processed foods');
     }
 
     if (todayNutrition!.fatPercentage < 20) {
-      advice.add('脂肪摄入偏低，可以适量增加坚果和健康油脂');
+      advice.add(
+          'Fat intake is low, consider adding nuts and healthy oils moderately');
     } else if (todayNutrition!.fatPercentage > 35) {
-      advice.add('脂肪摄入过高，减少油炸和高脂食物');
+      advice.add('Fat intake is high, reduce fried and high-fat foods');
     }
 
     if (advice.isEmpty) {
-      advice.add('营养比例很均衡，继续保持！');
+      advice.add('Nutrition ratios are well balanced, keep it up!');
     }
 
     return Card(
@@ -543,7 +548,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                 Icon(Icons.lightbulb, color: Colors.blue.shade600, size: 24),
                 const SizedBox(width: 8),
                 const Text(
-                  '营养建议',
+                  'Nutrition Advice',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -585,7 +590,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
       return const SizedBox.shrink();
     }
 
-    // 按餐次分组
+    // Group by meal type
     Map<String, List<FoodRecord>> mealGroups = {};
     for (var record in todayRecords) {
       mealGroups[record.mealType] = mealGroups[record.mealType] ?? [];
@@ -603,7 +608,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                 Icon(Icons.restaurant, color: Colors.green.shade600, size: 24),
                 const SizedBox(width: 8),
                 const Text(
-                  '今日食物详情',
+                  'Today\'s Food Details',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -683,7 +688,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
   }
 
   Widget _build7DayNutritionTrend() {
-    // 这里可以实现7天营养趋势图
+    // This can implement 7-day nutrition trend chart
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -691,7 +696,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '7天营养趋势',
+              '7-Day Nutrition Trends',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -702,7 +707,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
               height: 200,
               child: const Center(
                 child: Text(
-                  '7天趋势图\n(待实现)',
+                  '7-Day Trend Chart\n(To be implemented)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -720,19 +725,19 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
   Widget _buildNutritionScore() {
     double score = 0;
 
-    // 计算营养平衡评分
+    // Calculate nutrition balance score
     if (todayNutrition!.isHealthyBalance) {
       score += 40;
     }
 
-    // 卡路里目标达成
+    // Calorie goal achievement
     final calorieProgress =
         todayNutrition!.totalCalories / nutritionGoals['calories']!;
     if (calorieProgress >= 0.8 && calorieProgress <= 1.2) {
       score += 30;
     }
 
-    // Protein充足
+    // Adequate protein
     if (todayNutrition!.totalProtein >= nutritionGoals['protein']! * 0.8) {
       score += 30;
     }
@@ -744,7 +749,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '营养平衡评分',
+              'Nutrition Balance Score',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -763,7 +768,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
                     ),
                   ),
                   Text(
-                    '分 / 100分',
+                    'points / 100',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -794,9 +799,9 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
   }
 
   String _getScoreDescription(double score) {
-    if (score >= 80) return '营养均衡，非常棒！';
-    if (score >= 60) return '还不错，继续努力！';
-    return '需要改善营养搭配';
+    if (score >= 80) return 'Excellent nutrition balance!';
+    if (score >= 60) return 'Good, keep improving!';
+    return 'Needs improvement in nutrition balance';
   }
 
   Widget _buildImprovementSuggestions() {
@@ -807,7 +812,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '改善建议',
+              'Improvement Suggestions',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -815,20 +820,20 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
             ),
             const SizedBox(height: 12),
             _buildSuggestionItem(
-              '增加Vegetables摄入',
-              '每餐至少包含一份绿叶Vegetables',
+              'Increase vegetable intake',
+              'Include at least one serving of leafy greens per meal',
               Icons.eco,
               Colors.green,
             ),
             _buildSuggestionItem(
-              '选择优质蛋白',
-              '鱼类、瘦肉、豆类是很好的选择',
+              'Choose quality protein',
+              'Fish, lean meat, and legumes are excellent choices',
               Icons.egg,
               Colors.red,
             ),
             _buildSuggestionItem(
-              '控制加工食品',
-              '减少高糖、高盐的加工食品',
+              'Control processed foods',
+              'Reduce high-sugar, high-sodium processed foods',
               Icons.warning,
               Colors.orange,
             ),
@@ -879,4 +884,3 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen>
     );
   }
 }
-

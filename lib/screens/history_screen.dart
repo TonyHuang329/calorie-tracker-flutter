@@ -57,7 +57,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         mealDistribution = mealDist;
       });
     } catch (e) {
-      print('加载数据失败: $e');
+      print('Failed to load data: $e');
     } finally {
       setState(() => isLoading = false);
     }
@@ -78,18 +78,18 @@ class _HistoryScreenState extends State<HistoryScreen>
               _loadAllData();
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 7, child: Text('最近7天')),
-              const PopupMenuItem(value: 14, child: Text('最近14天')),
-              const PopupMenuItem(value: 30, child: Text('最近30天')),
+              const PopupMenuItem(value: 7, child: Text('Last 7 Days')),
+              const PopupMenuItem(value: 14, child: Text('Last 14 Days')),
+              const PopupMenuItem(value: 30, child: Text('Last 30 Days')),
             ],
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(icon: Icon(Icons.trending_up), text: '趋势'),
-            Tab(icon: Icon(Icons.pie_chart), text: '统计'),
-            Tab(icon: Icon(Icons.restaurant), text: '食物'),
+            Tab(icon: Icon(Icons.trending_up), text: 'Trends'),
+            Tab(icon: Icon(Icons.pie_chart), text: 'Statistics'),
+            Tab(icon: Icon(Icons.restaurant), text: 'Foods'),
           ],
         ),
       ),
@@ -112,15 +112,15 @@ class _HistoryScreenState extends State<HistoryScreen>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 概览卡片
+          // Overview card
           _buildOverviewCard(),
           const SizedBox(height: 20),
 
-          // 趋势图表
+          // Trend chart
           _buildTrendChart(),
           const SizedBox(height: 20),
 
-          // 每日详细记录
+          // Daily detailed records
           _buildDailyRecords(),
         ],
       ),
@@ -131,15 +131,15 @@ class _HistoryScreenState extends State<HistoryScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // 目标完成统计
+        // Goal achievement statistics
         _buildGoalAchievementCard(),
         const SizedBox(height: 20),
 
-        // 餐次分布图
+        // Meal distribution chart
         _buildMealDistributionChart(),
         const SizedBox(height: 20),
 
-        // 统计卡片
+        // Statistics cards
         _buildStatsCards(),
       ],
     );
@@ -149,7 +149,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // 最常吃的食物
+        // Most frequent foods
         _buildFrequentFoodsCard(),
       ],
     );
@@ -160,7 +160,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text('暂无数据', textAlign: TextAlign.center),
+          child: Text('No data available', textAlign: TextAlign.center),
         ),
       );
     }
@@ -182,7 +182,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                 Icon(Icons.insights, color: Colors.blue, size: 24),
                 const SizedBox(width: 8),
                 Text(
-                  '最近${selectedDays}天概览',
+                  'Last ${selectedDays} Days Overview',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -194,23 +194,23 @@ class _HistoryScreenState extends State<HistoryScreen>
               children: [
                 Expanded(
                   child: _buildOverviewItem(
-                    '平均摄入',
+                    'Average Intake',
                     '${averageCalories.round()}',
-                    'kcal/天',
+                    'kcal/day',
                     Colors.blue,
                   ),
                 ),
                 Expanded(
                   child: _buildOverviewItem(
-                    '活跃天数',
+                    'Active Days',
                     '$activeDays',
-                    '天',
+                    'days',
                     Colors.green,
                   ),
                 ),
                 Expanded(
                   child: _buildOverviewItem(
-                    '目标达成率',
+                    'Goal Achievement',
                     '${goalStats?.achievementRate.round() ?? 0}',
                     '%',
                     Colors.orange,
@@ -266,7 +266,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '卡路里摄入趋势',
+              'Calorie Intake Trend',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -327,7 +327,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                   ),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
-                    // 实际摄入线
+                    // Actual intake line
                     LineChartBarData(
                       spots: weeklyData.asMap().entries.map((entry) {
                         return FlSpot(
@@ -352,7 +352,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                         color: Colors.blue.withOpacity(0.1),
                       ),
                     ),
-                    // 目标线
+                    // Target line
                     LineChartBarData(
                       spots: weeklyData.asMap().entries.map((entry) {
                         return FlSpot(entry.key.toDouble(), widget.dailyTarget);
@@ -371,9 +371,9 @@ class _HistoryScreenState extends State<HistoryScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildLegendItem('实际摄入', Colors.blue),
+                _buildLegendItem('Actual Intake', Colors.blue),
                 const SizedBox(width: 20),
-                _buildLegendItem('目标摄入', Colors.red),
+                _buildLegendItem('Target Intake', Colors.red),
               ],
             ),
           ],
@@ -410,7 +410,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '目标达成情况',
+              'Goal Achievement',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -450,7 +450,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                             ),
                           ),
                           Text(
-                            '${goalStats!.achievementRate.round()}% 达成率',
+                            '${goalStats!.achievementRate.round()}% Achievement Rate',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -465,9 +465,9 @@ class _HistoryScreenState extends State<HistoryScreen>
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          '达成天数',
+                          'Achieved Days',
                           '${goalStats!.achievedDays}',
-                          '天',
+                          'days',
                           Colors.green,
                           Icons.check_circle,
                         ),
@@ -475,7 +475,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
-                          '最佳表现',
+                          'Best Performance',
                           '${goalStats!.bestDayCalories.round()}',
                           'kcal',
                           Colors.blue,
@@ -507,7 +507,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '餐次分布',
+              'Meal Distribution',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -606,7 +606,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           children: [
             Expanded(
               child: _buildStatCard(
-                '平均摄入',
+                'Average Intake',
                 '${goalStats!.averageCalories.round()}',
                 'kcal',
                 Colors.blue,
@@ -616,7 +616,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                '目标差距',
+                'Target Gap',
                 '${goalStats!.averageGap.round()}',
                 'kcal',
                 goalStats!.averageGap > 0 ? Colors.red : Colors.green,
@@ -641,7 +641,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               Icon(Icons.restaurant, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
-                '暂无食物记录',
+                'No food records yet',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[600],
@@ -660,7 +660,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '最常吃的食物',
+              'Most Frequent Foods',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -693,7 +693,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       ),
       child: Row(
         children: [
-          // 排名徽章
+          // Rank badge
           Container(
             width: 32,
             height: 32,
@@ -714,7 +714,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           ),
           const SizedBox(width: 12),
 
-          // 食物信息
+          // Food information
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,7 +746,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '吃了 $frequency 次',
+                      'Eaten $frequency times',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -758,7 +758,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             ),
           ),
 
-          // 卡路里信息
+          // Calorie information
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -770,7 +770,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                 ),
               ),
               const Text(
-                '总kcal',
+                'total kcal',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey,
@@ -778,7 +778,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                '平均 ${avgCalories.round()}',
+                'avg ${avgCalories.round()}',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey[600],
@@ -801,7 +801,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '每日记录',
+              'Daily Records',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -865,7 +865,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                       ),
                     ),
                     Text(
-                      '${dayData.foodCount} 项食物',
+                      '${dayData.foodCount} food items',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -904,7 +904,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             ],
           ),
 
-          // 餐次分布条
+          // Meal distribution bar
           if (dayData.foodCount > 0) ...[
             const SizedBox(height: 8),
             Container(
@@ -922,14 +922,14 @@ class _HistoryScreenState extends State<HistoryScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildMealInfo('早', dayData.mealBreakdown['breakfast'] ?? 0,
+                _buildMealInfo('B', dayData.mealBreakdown['breakfast'] ?? 0,
                     Colors.orange),
                 _buildMealInfo(
-                    '午', dayData.mealBreakdown['lunch'] ?? 0, Colors.green),
+                    'L', dayData.mealBreakdown['lunch'] ?? 0, Colors.green),
                 _buildMealInfo(
-                    '晚', dayData.mealBreakdown['dinner'] ?? 0, Colors.blue),
+                    'D', dayData.mealBreakdown['dinner'] ?? 0, Colors.blue),
                 _buildMealInfo(
-                    'Snacks', dayData.mealBreakdown['snack'] ?? 0, Colors.purple),
+                    'S', dayData.mealBreakdown['snack'] ?? 0, Colors.purple),
               ],
             ),
           ],
@@ -1084,14 +1084,14 @@ class _HistoryScreenState extends State<HistoryScreen>
     final difference = today.difference(targetDate).inDays;
 
     if (difference == 0) {
-      return '今天';
+      return 'Today';
     } else if (difference == 1) {
-      return '昨天';
+      return 'Yesterday';
     } else if (difference == 2) {
-      return '前天';
+      return '2 days ago';
     } else {
-      final weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-      return '${date.month}月${date.day}日 ${weekdays[date.weekday - 1]}';
+      final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return '${date.month}/${date.day} ${weekdays[date.weekday - 1]}';
     }
   }
 
@@ -1103,4 +1103,3 @@ class _HistoryScreenState extends State<HistoryScreen>
     return Colors.red;
   }
 }
-

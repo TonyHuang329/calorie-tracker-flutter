@@ -6,9 +6,9 @@ class FoodRecommendation {
   final FoodItem food;
   final double recommendedQuantity;
   final String reason;
-  final double score; // 0-1 评分
-  final String category; // 推荐类别
-  final List<String> tags; // 推荐标签
+  final double score; // Score 0-1
+  final String category; // Recommendation category
+  final List<String> tags; // Recommendation tags
 
   FoodRecommendation({
     required this.food,
@@ -19,19 +19,19 @@ class FoodRecommendation {
     this.tags = const [],
   });
 
-  // 计算推荐食物的卡路里
+  // Calculate calories for recommended food
   double get estimatedCalories =>
       FoodDatabaseService.calculateCalories(food, recommendedQuantity);
 
-  // 获取推荐强度等级
+  // Get recommendation strength level
   String get strengthLevel {
-    if (score >= 0.8) return '强烈推荐';
-    if (score >= 0.6) return '推荐';
-    if (score >= 0.4) return '可以考虑';
-    return '一般';
+    if (score >= 0.8) return 'Strongly Recommended';
+    if (score >= 0.6) return 'Recommended';
+    if (score >= 0.4) return 'Consider';
+    return 'Optional';
   }
 
-  // 获取推荐图标
+  // Get recommendation icon
   String get iconEmoji {
     switch (category) {
       case 'calorie_match':
@@ -54,4 +54,3 @@ class FoodRecommendation {
     return 'FoodRecommendation(${food.name}, score: ${score.toStringAsFixed(2)}, reason: $reason)';
   }
 }
-

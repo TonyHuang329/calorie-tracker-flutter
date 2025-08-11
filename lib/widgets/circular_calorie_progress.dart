@@ -70,7 +70,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
           height: widget.size,
           child: Stack(
             children: [
-              // 背景圆环
+              // Background circle
               Container(
                 width: widget.size,
                 height: widget.size,
@@ -83,7 +83,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                 ),
               ),
 
-              // 进度圆环
+              // Progress circle
               CustomPaint(
                 size: Size(widget.size, widget.size),
                 painter: CircularProgressPainter(
@@ -94,7 +94,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                 ),
               ),
 
-              // 中心内容
+              // Center content
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -102,7 +102,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                     Text(
                       remaining > 0
                           ? '${remaining.round()}'
-                          : '超出${(-remaining).round()}',
+                          : 'Exceeded ${(-remaining).round()}',
                       style: TextStyle(
                         fontSize: widget.size * 0.12,
                         fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                       ),
                     ),
                     Text(
-                      remaining > 0 ? '剩余卡路里' : '卡路里',
+                      remaining > 0 ? 'Remaining calories' : 'calories',
                       style: TextStyle(
                         fontSize: widget.size * 0.06,
                         color: Colors.grey[600],
@@ -125,7 +125,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                       ),
                     ),
                     Text(
-                      '${(progress * 100).round()}% 完成',
+                      '${(progress * 100).round()}% complete',
                       style: TextStyle(
                         fontSize: widget.size * 0.04,
                         color: Colors.grey[500],
@@ -136,7 +136,7 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
                 ),
               ),
 
-              // 进度点
+              // Progress dot
               if (animatedProgress > 0)
                 Positioned.fill(
                   child: CustomPaint(
@@ -157,13 +157,13 @@ class _CircularCalorieProgressState extends State<CircularCalorieProgress>
 
   Color _getProgressColor(double progress) {
     if (progress <= 0.5) {
-      // 从红色到黄色
+      // From red to yellow
       return Color.lerp(Colors.red, Colors.orange, progress * 2)!;
     } else if (progress <= 1.0) {
-      // 从黄色到绿色
+      // From yellow to green
       return Color.lerp(Colors.orange, Colors.green, (progress - 0.5) * 2)!;
     } else {
-      // 超过目标，变红
+      // Exceeds target, turn red
       return Colors.red;
     }
   }
@@ -193,8 +193,8 @@ class CircularProgressPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    // 绘制进度弧线
-    const startAngle = -math.pi / 2; // 从顶部开始
+    // Draw progress arc
+    const startAngle = -math.pi / 2; // Start from top
     final sweepAngle = 2 * math.pi * math.min(progress, 1.0);
 
     canvas.drawArc(
@@ -232,7 +232,7 @@ class ProgressDotPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
-    // 计算进度点的位置
+    // Calculate progress dot position
     const startAngle = -math.pi / 2;
     final currentAngle = startAngle + (2 * math.pi * math.min(progress, 1.0));
 
@@ -248,7 +248,7 @@ class ProgressDotPainter extends CustomPainter {
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
-    // 绘制进度点
+    // Draw progress dot
     canvas.drawCircle(Offset(dotX, dotY), 8, paint);
     canvas.drawCircle(Offset(dotX, dotY), 8, borderPaint);
   }
@@ -258,4 +258,3 @@ class ProgressDotPainter extends CustomPainter {
     return true;
   }
 }
-

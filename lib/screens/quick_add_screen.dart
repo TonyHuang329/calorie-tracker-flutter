@@ -1,4 +1,4 @@
-﻿// lib/screens/quick_add_screen.dart - 修复版
+﻿// lib/screens/quick_add_screen.dart - Translated version
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../services/quick_add_service.dart';
@@ -61,7 +61,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         });
       }
     } catch (e) {
-      print('加载数据失败: $e');
+      print('Failed to load data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -94,7 +94,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
       final allFoods = FoodDatabaseService.getAllFoods();
       final food = allFoods.firstWhere(
         (f) => f.name == foodName,
-        orElse: () => throw Exception('未找到食物: $foodName'),
+        orElse: () => throw Exception('Food not found: $foodName'),
       );
 
       final quantity =
@@ -112,12 +112,12 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
       widget.onFoodAdded(record);
 
-      // Add到收藏夹（可选）
+      // Add to favorites (optional)
       QuickAddService.instance.addToFavorites(foodName);
 
-      _showSuccessMessage('已Add $foodName');
+      _showSuccessMessage('Added $foodName');
     } catch (e) {
-      _showErrorMessage('Add失败：${e.toString()}');
+      _showErrorMessage('Add failed: ${e.toString()}');
     }
   }
 
@@ -129,11 +129,12 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('选择 $foodName 的数量'),
+        title: Text('Select quantity for $foodName'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('推荐数量：', style: TextStyle(fontWeight: FontWeight.w500)),
+            Text('Recommended quantity:',
+                style: TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -184,9 +185,10 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         widget.onFoodAdded(record);
       }
 
-      _showSuccessMessage('已Add模板：${template.name} (${records.length}项食物)');
+      _showSuccessMessage(
+          'Applied template: ${template.name} (${records.length} items)');
     } catch (e) {
-      _showErrorMessage('应用模板失败：${e.toString()}');
+      _showErrorMessage('Failed to apply template: ${e.toString()}');
     }
   }
 
@@ -223,21 +225,20 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         title: const Text('Quick Add'),
         backgroundColor: Colors.orange.shade50,
         elevation: 0,
-        // 移除 bottom，改为在 body 中处理
       ),
       body: Column(
         children: [
-          // 顶部控制区域
+          // Top control area
           Container(
             color: Colors.orange.shade50,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // Search框
+                // Search box
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search食物... (支持拼音)',
+                    hintText: 'Search food... (supports pinyin)',
                     prefixIcon:
                         Icon(Icons.search, color: Colors.orange.shade600),
                     border: OutlineInputBorder(
@@ -252,13 +253,13 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                 ),
                 const SizedBox(height: 12),
 
-                // 餐次选择
+                // Meal selection
                 Row(
                   children: [
                     Icon(Icons.restaurant_menu,
                         color: Colors.orange.shade600, size: 20),
                     const SizedBox(width: 8),
-                    const Text('餐次:',
+                    const Text('Meal:',
                         style: TextStyle(fontWeight: FontWeight.w500)),
                     const SizedBox(width: 12),
                     Expanded(
@@ -278,7 +279,8 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                           },
                           items: const [
                             DropdownMenuItem(
-                                value: 'breakfast', child: Text('🌅 Breakfast')),
+                                value: 'breakfast',
+                                child: Text('🌅 Breakfast')),
                             DropdownMenuItem(
                                 value: 'lunch', child: Text('☀️ Lunch')),
                             DropdownMenuItem(
@@ -295,7 +297,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
             ),
           ),
 
-          // Tab栏
+          // Tab bar
           Container(
             color: Colors.white,
             child: TabBar(
@@ -305,15 +307,15 @@ class _QuickAddScreenState extends State<QuickAddScreen>
               indicatorColor: Colors.orange.shade600,
               indicatorWeight: 3,
               tabs: const [
-                Tab(icon: Icon(Icons.history), text: '最近'),
-                Tab(icon: Icon(Icons.favorite), text: '收藏'),
-                Tab(icon: Icon(Icons.restaurant), text: '模板'),
+                Tab(icon: Icon(Icons.history), text: 'Recent'),
+                Tab(icon: Icon(Icons.favorite), text: 'Favorites'),
+                Tab(icon: Icon(Icons.restaurant), text: 'Templates'),
                 Tab(icon: Icon(Icons.search), text: 'Search'),
               ],
             ),
           ),
 
-          // 内容区域
+          // Content area
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -334,7 +336,8 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildRecentTab() {
     if (_recentFoods.isEmpty) {
-      return _buildEmptyState('暂无最近Add的食物', '开始记录饮食后，这里会显示最近吃过的食物');
+      return _buildEmptyState('No recent foods yet',
+          'Recently added foods will appear here after you start tracking your diet');
     }
 
     return ListView.builder(
@@ -344,7 +347,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         final foodName = _recentFoods[index];
         return _buildFoodTile(
           foodName,
-          subtitle: '最近Add',
+          subtitle: 'Recently added',
           onTap: () => _quickAddFood(foodName),
           onLongPress: () => _showQuantityDialog(foodName),
         );
@@ -354,7 +357,8 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildFavoritesTab() {
     if (_favoriteFoods.isEmpty) {
-      return _buildEmptyState('暂无收藏的食物', 'Add Food时会自动收藏，长按可调整数量');
+      return _buildEmptyState('No favorite foods yet',
+          'Foods will be automatically favorited when added, long press to adjust quantity');
     }
 
     return ListView.builder(
@@ -364,7 +368,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         final foodName = _favoriteFoods[index];
         return _buildFoodTile(
           foodName,
-          subtitle: '收藏的食物',
+          subtitle: 'Favorite food',
           onTap: () => _quickAddFood(foodName),
           onLongPress: () => _showQuantityDialog(foodName),
           trailing: IconButton(
@@ -372,7 +376,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
             onPressed: () async {
               await QuickAddService.instance.removeFromFavorites(foodName);
               _loadData();
-              _showSuccessMessage('已从收藏夹移除');
+              _showSuccessMessage('Removed from favorites');
             },
           ),
         );
@@ -382,7 +386,8 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildTemplatesTab() {
     if (_mealTemplates.isEmpty) {
-      return _buildEmptyState('暂无餐次模板', '您可以Save常用的餐次组合作为模板\n(此功能未来版本开放)');
+      return _buildEmptyState('No meal templates yet',
+          'You can save common meal combinations as templates\n(This feature will be available in future versions)');
     }
 
     return ListView.builder(
@@ -408,7 +413,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${template.foods.length} 种食物'),
+                Text('${template.foods.length} food items'),
                 Text('${template.totalCalories.round()} kcal'),
               ],
             ),
@@ -425,12 +430,12 @@ class _QuickAddScreenState extends State<QuickAddScreen>
                       color: Colors.red, size: 20),
                   onPressed: () async {
                     final confirmed = await _showConfirmDialog(
-                        'ConfirmDelete模板 "${template.name}" 吗？');
+                        'Delete template "${template.name}"?');
                     if (confirmed) {
                       await QuickAddService.instance
                           .deleteMealTemplate(template.name);
                       _loadData();
-                      _showSuccessMessage('已Delete模板');
+                      _showSuccessMessage('Template deleted');
                     }
                   },
                 ),
@@ -445,11 +450,13 @@ class _QuickAddScreenState extends State<QuickAddScreen>
 
   Widget _buildSearchTab() {
     if (_searchController.text.isEmpty) {
-      return _buildEmptyState('输入食物名称开始Search', '支持中文名称、拼音Search\n例如：输入"pg"可以找到"Apple"');
+      return _buildEmptyState('Enter food name to search',
+          'Supports Chinese names and pinyin search\nExample: Enter "pg" to find "Apple"');
     }
 
     if (_searchResults.isEmpty) {
-      return _buildEmptyState('未找到相关食物', '试试其他关键词或拼音缩写');
+      return _buildEmptyState('No matching foods found',
+          'Try other keywords or pinyin abbreviations');
     }
 
     return ListView.builder(
@@ -555,9 +562,10 @@ class _QuickAddScreenState extends State<QuickAddScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('总卡路里: ${template.totalCalories.round()} kcal'),
+            Text('Total calories: ${template.totalCalories.round()} kcal'),
             const SizedBox(height: 12),
-            const Text('包含食物:', style: TextStyle(fontWeight: FontWeight.w500)),
+            const Text('Contains foods:',
+                style: TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             ...template.foods
                 .map((food) => Padding(
@@ -571,14 +579,14 @@ class _QuickAddScreenState extends State<QuickAddScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('关闭'),
+            child: const Text('Close'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _applyMealTemplate(template);
             },
-            child: const Text('应用模板'),
+            child: const Text('Apply Template'),
           ),
         ],
       ),
@@ -589,7 +597,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('确认'),
+            title: const Text('Confirm'),
             content: Text(message),
             actions: [
               TextButton(
@@ -611,7 +619,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     final food = allFoods.firstWhere(
       (f) => f.name == foodName,
       orElse: () => FoodItem(
-          name: foodName, caloriesPerUnit: 1, unit: 'g', category: '其他'),
+          name: foodName, caloriesPerUnit: 1, unit: 'g', category: 'Other'),
     );
 
     switch (food.category) {
@@ -637,7 +645,7 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     final food = allFoods.firstWhere(
       (f) => f.name == foodName,
       orElse: () => FoodItem(
-          name: foodName, caloriesPerUnit: 1, unit: 'g', category: '其他'),
+          name: foodName, caloriesPerUnit: 1, unit: 'g', category: 'Other'),
     );
 
     switch (food.category) {
@@ -658,4 +666,3 @@ class _QuickAddScreenState extends State<QuickAddScreen>
     }
   }
 }
-

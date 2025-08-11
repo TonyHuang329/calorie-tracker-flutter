@@ -1,12 +1,12 @@
 ﻿import '../models/user_profile.dart';
 
 class CalorieCalculatorService {
-  /// 根据用户资料计算每日卡路里需求
+  /// Calculate daily calorie needs based on user profile
   static double calculateDailyCalorieNeeds(UserProfile user) {
     return user.calculateTDEE();
   }
 
-  /// 计算BMR - 基础代谢率
+  /// Calculate BMR - Basal Metabolic Rate
   static double calculateBMR({
     required double weight,
     required double height,
@@ -20,7 +20,7 @@ class CalorieCalculatorService {
     }
   }
 
-  /// 根据活动水平计算TDEE
+  /// Calculate TDEE based on activity level
   static double calculateTDEE({
     required double bmr,
     required String activityLevel,
@@ -29,25 +29,25 @@ class CalorieCalculatorService {
     return bmr * multiplier;
   }
 
-  /// 获取活动水平对应的倍数
+  /// Get activity level multiplier
   static double getActivityMultiplier(String activityLevel) {
     switch (activityLevel.toLowerCase()) {
       case 'sedentary':
-        return 1.2; // 久坐
+        return 1.2; // Sedentary
       case 'light':
-        return 1.375; // 轻度活动
+        return 1.375; // Light activity
       case 'moderate':
-        return 1.55; // 中度活动
+        return 1.55; // Moderate activity
       case 'active':
-        return 1.725; // 高度活动
+        return 1.725; // High activity
       case 'very_active':
-        return 1.9; // 极度活动
+        return 1.9; // Very high activity
       default:
         return 1.2;
     }
   }
 
-  /// 获取活动水平的中文描述
+  /// Get activity level description
   static String getActivityLevelDescription(String activityLevel) {
     switch (activityLevel.toLowerCase()) {
       case 'sedentary':
@@ -65,7 +65,7 @@ class CalorieCalculatorService {
     }
   }
 
-  /// 计算当前摄入与目标的百分比
+  /// Calculate intake percentage relative to target
   static double calculateIntakePercentage({
     required double currentIntake,
     required double targetIntake,
@@ -74,7 +74,7 @@ class CalorieCalculatorService {
     return (currentIntake / targetIntake) * 100;
   }
 
-  /// 计算剩余可摄入卡路里
+  /// Calculate remaining calories to consume
   static double calculateRemainingCalories({
     required double targetIntake,
     required double currentIntake,
@@ -82,7 +82,7 @@ class CalorieCalculatorService {
     return targetIntake - currentIntake;
   }
 
-  /// 验证输入数据的合理性
+  /// Validate input data reasonableness
   static Map<String, String?> validateUserInput({
     required double weight,
     required double height,
@@ -92,27 +92,27 @@ class CalorieCalculatorService {
   }) {
     Map<String, String?> errors = {};
 
-    // Weight验证 (30-300kg)
+    // Weight validation (30-300kg)
     if (weight < 30 || weight > 300) {
-      errors['weight'] = 'Weight应在30-300kg之间';
+      errors['weight'] = 'Weight should be between 30-300kg';
     }
 
-    // Height验证 (100-250cm)
+    // Height validation (100-250cm)
     if (height < 100 || height > 250) {
-      errors['height'] = 'Height应在100-250cm之间';
+      errors['height'] = 'Height should be between 100-250cm';
     }
 
-    // Age验证 (10-120岁)
+    // Age validation (10-120 years)
     if (age < 10 || age > 120) {
-      errors['age'] = 'Age应在10-120岁之间';
+      errors['age'] = 'Age should be between 10-120 years';
     }
 
-    // Gender验证
+    // Gender validation
     if (!['male', 'female'].contains(gender.toLowerCase())) {
-      errors['gender'] = 'Gender必须是male或female';
+      errors['gender'] = 'Gender must be male or female';
     }
 
-    // 活动水平验证
+    // Activity level validation
     List<String> validActivityLevels = [
       'sedentary',
       'light',
@@ -121,7 +121,7 @@ class CalorieCalculatorService {
       'very_active'
     ];
     if (!validActivityLevels.contains(activityLevel.toLowerCase())) {
-      errors['activityLevel'] = '活动水平无效';
+      errors['activityLevel'] = 'Invalid activity level';
     }
 
     return errors;

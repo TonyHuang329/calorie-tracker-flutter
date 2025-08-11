@@ -27,7 +27,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   FoodItem? _selectedFood;
   String _selectedMealType = 'breakfast';
   double _quantity = 100.0;
-  List<FoodRecord> _addedRecords = []; // 存储已Add的食物记录
+  List<FoodRecord> _addedRecords = []; // Store added food records
 
   late TabController _tabController;
 
@@ -69,7 +69,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
   void _selectFood(FoodItem food) {
     setState(() {
       _selectedFood = food;
-      // Settings推荐数量
+      // Set recommended quantity
       final recommended = FoodDatabaseService.getRecommendedServing(food);
       _quantityController.text = recommended.toString();
       _quantity = recommended;
@@ -87,12 +87,12 @@ class _AddFoodScreenState extends State<AddFoodScreen>
 
   void _addFoodRecord() {
     if (_selectedFood == null) {
-      _showErrorMessage('请选择一个食物');
+      _showErrorMessage('Please select a food item');
       return;
     }
 
     if (_quantity <= 0) {
-      _showErrorMessage('请输入有效的数量');
+      _showErrorMessage('Please enter a valid quantity');
       return;
     }
 
@@ -107,27 +107,27 @@ class _AddFoodScreenState extends State<AddFoodScreen>
       mealType: _selectedMealType,
     );
 
-    // Add到本地记录列表
+    // Add to local record list
     setState(() {
       _addedRecords.add(foodRecord);
-      _selectedFood = null; // 清除选择，方便继续Add
+      _selectedFood = null; // Clear selection for next addition
     });
 
-    // 调用回调函数Save到数据库
+    // Call callback function to save to database
     widget.onFoodAdded(foodRecord);
 
-    // 显示成功提示
+    // Show success message
     _showSuccessMessage(
-        '${foodRecord.foodItem?.name} 已Add (${totalCalories.round()} 卡路里)');
+        '${foodRecord.foodItem?.name} added (${totalCalories.round()} calories)');
 
-    // 保持在当前食物选择页面，不跳转
+    // Stay on current food selection page, don't navigate
   }
 
   void _removeAddedRecord(int index) {
     setState(() {
       _addedRecords.removeAt(index);
     });
-    _showInfoMessage('已移除食物记录');
+    _showInfoMessage('Food record removed');
   }
 
   void _finishAdding() {
@@ -176,7 +176,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Settings ${_selectedFood!.name} 的数量'),
+        title: Text('Set quantity for ${_selectedFood!.name}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -186,7 +186,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                   const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
               decoration: InputDecoration(
-                labelText: '数量',
+                labelText: 'Quantity',
                 suffixText: _selectedFood!.unit,
                 border: const OutlineInputBorder(),
               ),
@@ -211,7 +211,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
               child: Column(
                 children: [
                   Text(
-                    '${(_selectedFood!.caloriesPerUnit * _quantity).round()} 卡路里',
+                    '${(_selectedFood!.caloriesPerUnit * _quantity).round()} calories',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -279,7 +279,8 @@ class _AddFoodScreenState extends State<AddFoodScreen>
             TextButton.icon(
               onPressed: _finishAdding,
               icon: const Icon(Icons.check, color: Colors.white),
-              label: const Text('完成', style: TextStyle(color: Colors.white)),
+              label:
+                  const Text('Finish', style: TextStyle(color: Colors.white)),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -292,7 +293,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
           tabs: [
             Tab(
               icon: const Icon(Icons.add_circle_outline),
-              text: '选择食物',
+              text: 'Select Food',
             ),
             Tab(
               icon: Row(
@@ -320,7 +321,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                   ],
                 ],
               ),
-              text: '已Add',
+              text: 'Added',
             ),
           ],
         ),
@@ -340,17 +341,17 @@ class _AddFoodScreenState extends State<AddFoodScreen>
       children: [
         Column(
           children: [
-            // 顶部Search和餐次选择
+            // Top search and meal selection
             Container(
               color: Colors.green.shade50,
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Search栏
+                  // Search bar
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search食物名称或分类...',
+                      hintText: 'Search food name or category...',
                       prefixIcon:
                           Icon(Icons.search, color: Colors.green.shade600),
                       border: OutlineInputBorder(
@@ -365,13 +366,13 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                   ),
                   const SizedBox(height: 12),
 
-                  // 餐次选择
+                  // Meal selection
                   Row(
                     children: [
                       Icon(Icons.restaurant_menu,
                           color: Colors.green.shade600, size: 20),
                       const SizedBox(width: 8),
-                      const Text('餐次:',
+                      const Text('Meal:',
                           style: TextStyle(fontWeight: FontWeight.w500)),
                       const SizedBox(width: 12),
                       Expanded(
@@ -446,7 +447,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
               ),
             ),
 
-            // 食物分类快捷选择
+            // Food category quick selection
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: SingleChildScrollView(
@@ -483,7 +484,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
               ),
             ),
 
-            // 食物列表
+            // Food list
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.only(
@@ -519,7 +520,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                           ),
                           child: Row(
                             children: [
-                              // 食物图标
+                              // Food icon
                               Container(
                                 width: 48,
                                 height: 48,
@@ -536,7 +537,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                               ),
                               const SizedBox(width: 12),
 
-                              // 食物信息
+                              // Food information
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +554,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${food.caloriesPerUnit.toStringAsFixed(1)} 卡路里/每${food.unit}',
+                                      '${food.caloriesPerUnit.toStringAsFixed(1)} calories per ${food.unit}',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[600],
@@ -563,7 +564,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                 ),
                               ),
 
-                              // 分类标签
+                              // Category tag
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
@@ -581,7 +582,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                 ),
                               ),
 
-                              // 选中指示器
+                              // Selection indicator
                               if (isSelected) ...[
                                 const SizedBox(width: 8),
                                 Icon(
@@ -602,7 +603,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
           ],
         ),
 
-        // 底部固定的操作区域
+        // Bottom fixed action area
         if (_selectedFood != null)
           Positioned(
             left: 0,
@@ -624,7 +625,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 选中食物信息条
+                    // Selected food info bar
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -652,7 +653,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                                   ),
                                 ),
                                 Text(
-                                  '${(_selectedFood!.caloriesPerUnit * _quantity).round()} 卡路里 (${_quantity}${_selectedFood!.unit})',
+                                  '${(_selectedFood!.caloriesPerUnit * _quantity).round()} calories (${_quantity}${_selectedFood!.unit})',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -664,7 +665,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                           TextButton(
                             onPressed: _showQuantityDialog,
                             child: Text(
-                              '调整数量',
+                              'Adjust',
                               style: TextStyle(color: Colors.green.shade700),
                             ),
                           ),
@@ -673,14 +674,14 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                     ),
                     const SizedBox(height: 12),
 
-                    // Add按钮
+                    // Add button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _addFoodRecord,
                         icon: const Icon(Icons.add_circle_outline, size: 20),
                         label: const Text(
-                          'Add并继续',
+                          'Add and Continue',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -719,7 +720,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              '还没有Add任何食物',
+              'No food added yet',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -728,7 +729,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              '在"选择食物"标签页中Add Food',
+              'Add food in the "Select Food" tab',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -744,7 +745,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
 
     return Column(
       children: [
-        // 总计信息
+        // Summary information
         Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
@@ -764,7 +765,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '本次Add',
+                    'This Session',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.green.shade700,
@@ -772,7 +773,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                     ),
                   ),
                   Text(
-                    '${_addedRecords.length} 项食物',
+                    '${_addedRecords.length} food items',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -784,7 +785,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '总卡路里',
+                    'Total Calories',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.green.shade700,
@@ -805,7 +806,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
           ),
         ),
 
-        // 已Add Food列表
+        // Added food list
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -847,7 +848,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            record.foodItem?.name ?? '未知食物',
+                            record.foodItem?.name ?? 'Unknown food',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -895,7 +896,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
           ),
         ),
 
-        // 底部完成按钮
+        // Bottom finish button
         Container(
           padding: const EdgeInsets.all(16),
           child: SizedBox(
@@ -904,7 +905,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
               onPressed: _finishAdding,
               icon: const Icon(Icons.check_circle, size: 20),
               label: const Text(
-                '完成Add',
+                'Finish Adding',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1005,8 +1006,7 @@ class _AddFoodScreenState extends State<AddFoodScreen>
       case 'snack':
         return 'Snacks';
       default:
-        return '未知';
+        return 'Unknown';
     }
   }
 }
-
