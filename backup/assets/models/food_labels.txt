@@ -1,0 +1,10 @@
+pizza
+hamburger
+fried_rice
+grilled_salmon
+french_fries
+caesar_salad
+ice_cream
+sushi
+apple_pie
+chocolate_cake

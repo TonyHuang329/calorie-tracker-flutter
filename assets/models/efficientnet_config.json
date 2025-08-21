@@ -1,0 +1,37 @@
+{
+  "class_names": [
+    "pizza",
+    "hamburger",
+    "fried_rice",
+    "grilled_salmon",
+    "french_fries",
+    "caesar_salad",
+    "ice_cream",
+    "sushi",
+    "apple_pie",
+    "chocolate_cake"
+  ],
+  "num_classes": 10,
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "mean": [
+    127.5,
+    127.5,
+    127.5
+  ],
+  "std": [
+    127.5,
+    127.5,
+    127.5
+  ],
+  "model_info": {
+    "name": "EfficientNetFoodClassifier",
+    "architecture": "EfficientNetB0",
+    "version": "1.0",
+    "accuracy": 0.797,
+    "framework": "TensorFlow Lite"
+  }
+}

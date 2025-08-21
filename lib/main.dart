@@ -1,840 +1,497 @@
-﻿import 'package:flutter/material.dart';
-import 'models/user_profile.dart';
-import 'models/food_item.dart';
-import 'models/health_goal.dart';
-import 'services/calorie_calculator.dart';
+﻿// lib/main.dart - 修复版本
+
+import 'package:flutter/material.dart';
 import 'services/database_service.dart';
+import 'services/ai_food_recognition_service.dart';
 import 'services/food_database.dart';
 import 'services/food_recommendation_service.dart';
+import 'services/quick_add_service.dart';
+import 'services/health_goal_service.dart';
+import 'services/calorie_calculator.dart';
+import 'screens/ai_camera_screen.dart';
 import 'screens/add_food_screen.dart';
-import 'screens/profile_settings_screen.dart';
+import 'screens/quick_add_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/nutrition_overview_screen.dart';
-import 'screens/create_goal_screen.dart';
 import 'screens/health_goals_screen.dart';
-import 'widgets/circular_calorie_progress.dart';
-import 'services/quick_add_service.dart';
-import 'screens/quick_add_screen.dart';
+import 'models/user_profile.dart';
+import 'models/food_item.dart';
 
-void main() {
-  runApp(const CalorieTrackerApp());
+void main() async {
+  print('🚀 Calorie Tracker App starting...');
+
+  // 确保Flutter binding初始化
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // 初始化所有服务
+    await AIFoodRecognitionService.initialize();
+    print('🤖 AI Food Recognition Service initialized');
+
+    // 初始化食物数据库
+    FoodDatabaseService.getAllFoods(); // 预加载食物数据
+    print('🍎 Food Database Service initialized');
+
+    print('✅ All services initialized successfully');
+  } catch (e) {
+    print('⚠️  Service initialization warning: $e');
+  }
+
+  runApp(CalorieTrackerApp());
 }
 
 class CalorieTrackerApp extends StatelessWidget {
-  const CalorieTrackerApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calorie Tracker',
+      title: 'Calorie Tracker Pro',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const HomeScreen(),
+      home: MainNavigationScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+class MainNavigationScreen extends StatefulWidget {
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  UserProfile? currentUser;
-  List<FoodRecord> todayFoodRecords = [];
-  bool isLoading = true;
-
-  // Recommendation related variables
-  List<String> _quickRecommendations = [];
-  bool _isLoadingRecommendations = false;
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _selectedIndex = 0;
+  UserProfile? _userProfile;
+  List<Widget>? _screens; // 修改为可空类型
 
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    _loadUserProfile();
   }
 
-  // Calculate current calorie intake
-  double get currentCalorieIntake {
-    return todayFoodRecords.fold(
-        0.0, (sum, record) => sum + record.totalCalories);
-  }
-
-  // Get today's nutrition summary
-  Map<String, double> get todayNutritionSummary {
-    double protein = 0, carbs = 0, fat = 0;
-
-    for (var record in todayFoodRecords) {
-      final quantity = record.quantity;
-      final category = record.foodItem?.category ?? '';
-
-      // Estimate nutrition based on food category
-      switch (category) {
-        case 'Protein':
-          protein += quantity * 0.25;
-          carbs += quantity * 0.02;
-          fat += quantity * 0.08;
-          break;
-        case 'Staple Food':
-          protein += quantity * 0.08;
-          carbs += quantity * 0.75;
-          fat += quantity * 0.02;
-          break;
-        case 'Vegetables':
-          protein += quantity * 0.025;
-          carbs += quantity * 0.06;
-          fat += quantity * 0.005;
-          break;
-        case 'Fruits':
-          protein += quantity * 0.01;
-          carbs += quantity * 0.15;
-          fat += quantity * 0.003;
-          break;
-        default:
-          protein += quantity * 0.15;
-          carbs += quantity * 0.55;
-          fat += quantity * 0.30;
-      }
+  void _initializeScreens() {
+    if (_screens == null) {
+      // 只初始化一次
+      _screens = [
+        EnhancedHomeScreen(
+          userProfile: _userProfile,
+          onProfileUpdate: () => _loadUserProfile(),
+        ),
+        AICameraScreen(),
+        AddFoodScreen(onFoodAdded: _onFoodAdded),
+        QuickAddScreen(onFoodAdded: _onFoodAdded),
+        HistoryScreen(dailyTarget: _userProfile?.calculateTDEE() ?? 2000),
+      ];
+    } else {
+      // 如果已初始化，只更新需要更新的页面
+      _screens![0] = EnhancedHomeScreen(
+        userProfile: _userProfile,
+        onProfileUpdate: () => _loadUserProfile(),
+      );
+      _screens![4] =
+          HistoryScreen(dailyTarget: _userProfile?.calculateTDEE() ?? 2000);
     }
-
-    return {'protein': protein, 'carbs': carbs, 'fat': fat};
   }
 
-  // Initialize app
-  Future<void> _initializeApp() async {
-    await _loadUserData();
-    await _loadTodayFoodRecords();
-    _loadQuickRecommendations();
-  }
-
-  // Load user data
-  Future<void> _loadUserData() async {
+  Future<void> _loadUserProfile() async {
     try {
-      final savedUser = await DatabaseService.getUserProfile();
-
-      if (savedUser != null) {
-        currentUser = savedUser;
-      } else {
-        // Create default user
-        currentUser = UserProfile(
-          name: 'User',
-          age: 25,
-          gender: 'male',
-          height: 170,
-          weight: 65,
-          activityLevel: 'moderate',
-        );
-        await DatabaseService.saveUserProfile(currentUser!);
+      final profile = await DatabaseService.getUserProfile();
+      if (mounted) {
+        setState(() {
+          _userProfile = profile;
+          _initializeScreens();
+        });
       }
     } catch (e) {
-      _handleError('Failed to load user data', e);
-      // Use default user data
-      currentUser = UserProfile(
-        name: 'User',
-        age: 25,
-        gender: 'male',
-        height: 170,
-        weight: 65,
-        activityLevel: 'moderate',
+      print('Failed to load user profile: $e');
+      if (mounted) {
+        setState(() {
+          _initializeScreens();
+        });
+      }
+    }
+  }
+
+  void _onFoodAdded(FoodRecord record) {
+    print('Food added: ${record.foodItem?.name}');
+    // 刷新主页数据
+    if (_selectedIndex == 0) {
+      _loadUserProfile();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_screens == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
-    } finally {
+    }
+
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens!,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        selectedItemColor: Colors.blue.shade600,
+        unselectedItemColor: Colors.grey.shade600,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: 'AI Camera',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Add Food',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.flash_on),
+            label: 'Quick Add',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+        ],
+      ),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () => _showQuickActions(),
+              child: Icon(Icons.add),
+              backgroundColor: Colors.blue.shade600,
+            )
+          : null,
+    );
+  }
+
+  void _showQuickActions() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Quick Actions',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            _buildQuickActionTile(
+              'AI Camera',
+              'Recognize food with AI',
+              Icons.camera_alt,
+              Colors.orange,
+              () {
+                Navigator.pop(context);
+                setState(() => _selectedIndex = 1);
+              },
+            ),
+            _buildQuickActionTile(
+              'Add Food',
+              'Manual food entry',
+              Icons.restaurant,
+              Colors.green,
+              () {
+                Navigator.pop(context);
+                setState(() => _selectedIndex = 2);
+              },
+            ),
+            _buildQuickActionTile(
+              'Quick Add',
+              'Recent foods & templates',
+              Icons.flash_on,
+              Colors.blue,
+              () {
+                Navigator.pop(context);
+                setState(() => _selectedIndex = 3);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionTile(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withOpacity(0.1),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+}
+
+// 增强版主页，集成所有服务
+class EnhancedHomeScreen extends StatefulWidget {
+  final UserProfile? userProfile;
+  final VoidCallback onProfileUpdate;
+
+  const EnhancedHomeScreen({
+    Key? key,
+    this.userProfile,
+    required this.onProfileUpdate,
+  }) : super(key: key);
+
+  @override
+  State<EnhancedHomeScreen> createState() => _EnhancedHomeScreenState();
+}
+
+class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
+  List<FoodRecord> todayRecords = [];
+  double todayCalories = 0;
+  List<String> recommendations = [];
+  List<String> favorites = [];
+  List<String> recentFoods = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    if (!mounted) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      // 加载今日数据
+      final records = await DatabaseService.getTodayFoodRecords();
+      final totalCalories = records.fold<double>(
+        0,
+        (sum, record) => sum + record.totalCalories,
+      );
+
+      // 加载个性化推荐（如果有用户配置）
+      List<String> recs = [];
+      if (widget.userProfile != null) {
+        try {
+          final recService = FoodRecommendationService.instance;
+          final recommendations =
+              await recService.getQuickRecommendations(widget.userProfile!);
+          recs = recommendations;
+        } catch (e) {
+          print('Failed to load recommendations: $e');
+        }
+      }
+
+      // 加载收藏和最近食物
+      final quickService = QuickAddService.instance;
+      final favs = await quickService.getFavorites();
+      final recent = await quickService.getRecentFoods();
+
+      if (mounted) {
+        setState(() {
+          todayRecords = records;
+          todayCalories = totalCalories;
+          recommendations = recs;
+          favorites = favs;
+          recentFoods = recent;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Failed to load data: $e');
       if (mounted) {
         setState(() => isLoading = false);
       }
     }
   }
 
-  // Load today's food records
-  Future<void> _loadTodayFoodRecords() async {
-    try {
-      final records = await DatabaseService.getTodayFoodRecords();
-      if (mounted) {
-        setState(() => todayFoodRecords = records);
-      }
-    } catch (e) {
-      _handleError('Failed to load today\'s food records', e);
-    }
-  }
-
-  // Load quick recommendations
-  Future<void> _loadQuickRecommendations() async {
-    if (currentUser == null) return;
-
-    setState(() => _isLoadingRecommendations = true);
-
-    try {
-      final recommendations = await FoodRecommendationService.instance
-          .getQuickRecommendations(currentUser!);
-
-      if (mounted) {
-        setState(() {
-          _quickRecommendations = recommendations;
-          _isLoadingRecommendations = false;
-        });
-      }
-    } catch (e) {
-      print('Failed to load quick recommendations: $e');
-      if (mounted) {
-        setState(() => _isLoadingRecommendations = false);
-      }
-    }
-  }
-
-  // Add food record
-  Future<void> _addFoodRecord(FoodRecord record) async {
-    try {
-      await DatabaseService.saveFoodRecord(record);
-
-      if (mounted) {
-        setState(() => todayFoodRecords.add(record));
-        _showSuccessMessage(
-            'Added ${record.foodItem?.name} (${record.totalCalories.round()} calories)');
-        // Reload recommendations
-        _loadQuickRecommendations();
-      }
-    } catch (e) {
-      _handleError('Failed to save food record', e);
-    }
-  }
-
-  // Delete food record
-  Future<void> _removeFoodRecord(int index) async {
-    try {
-      final record = todayFoodRecords[index];
-
-      if (record.id != null) {
-        await DatabaseService.deleteFoodRecord(record.id!);
-      }
-
-      if (mounted) {
-        setState(() => todayFoodRecords.removeAt(index));
-        _showInfoMessage('Food record deleted');
-        // Reload recommendations
-        _loadQuickRecommendations();
-      }
-    } catch (e) {
-      _handleError('Failed to delete food record', e);
-    }
-  }
-
-  // Update user profile
-  Future<void> _updateUserProfile(UserProfile newProfile) async {
-    try {
-      await DatabaseService.saveUserProfile(newProfile);
-
-      if (mounted) {
-        setState(() => currentUser = newProfile);
-        _showSuccessMessage('Profile saved');
-        // Reload recommendations
-        _loadQuickRecommendations();
-      }
-    } catch (e) {
-      _handleError('Failed to save user profile', e);
-    }
-  }
-
-  // Quick add recommended food
-  void _quickAddRecommendedFood(String foodName) {
-    try {
-      // Find corresponding food from database
-      final allFoods = FoodDatabaseService.getAllFoods();
-      final food = allFoods.firstWhere(
-        (f) => f.name == foodName,
-        orElse: () => throw Exception('Food not found: $foodName'),
-      );
-
-      final quantity = FoodDatabaseService.getRecommendedServing(food);
-      final totalCalories =
-          FoodDatabaseService.calculateCalories(food, quantity);
-
-      final record = FoodRecord(
-        foodItemId: food.id ?? 0,
-        foodItem: food,
-        quantity: quantity,
-        totalCalories: totalCalories,
-        mealType: _getMealTypeFromTime(),
-      );
-
-      _addFoodRecord(record);
-    } catch (e) {
-      _showErrorMessage('Add failed: ${e.toString()}');
-    }
-  }
-
-  // Navigation methods
-  void _navigateToAddFood() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AddFoodScreen(onFoodAdded: _addFoodRecord),
-      ),
-    );
-  }
-
-  void _navigateToSettings() {
-    if (currentUser != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ProfileSettingsScreen(
-            currentUser: currentUser!,
-            onProfileUpdated: _updateUserProfile,
-          ),
-        ),
-      );
-    }
-  }
-
-  void _navigateToNutritionOverview() {
-    if (currentUser != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              NutritionOverviewScreen(userProfile: currentUser!),
-        ),
-      );
-    }
-  }
-
-  void _navigateToHistory() {
-    if (currentUser != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              HistoryScreen(dailyTarget: currentUser!.calculateTDEE()),
-        ),
-      );
-    }
-  }
-
-  void _navigateToQuickAdd() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => QuickAddScreen(onFoodAdded: _addFoodRecord),
-      ),
-    );
-  }
-
-  // Health Goals as a separate feature
-  void _navigateToHealthGoals() {
-    if (currentUser != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => HealthGoalsScreen(userProfile: currentUser!),
-        ),
-      );
-    }
-  }
-
-  // Intelligently select meal type based on time
-  String _getMealTypeFromTime() {
-    final hour = DateTime.now().hour;
-    if (hour < 10) return 'breakfast';
-    if (hour < 14) return 'lunch';
-    if (hour < 18) return 'snack';
-    return 'dinner';
-  }
-
-  // Message prompt methods
-  void _showSuccessMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showInfoMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showErrorMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  void _handleError(String message, dynamic error) {
-    print('$message: $error');
-    _showErrorMessage('$message, please try again');
-  }
-
-  // Debug functionality
-  Future<void> _clearAllData() async {
-    final confirmed =
-        await _showConfirmDialog('Are you sure you want to clear all data?');
-    if (confirmed) {
-      try {
-        await DatabaseService.clearAllData();
-        if (mounted) {
-          setState(() {
-            todayFoodRecords.clear();
-          });
-          _showInfoMessage('All data cleared');
-          _loadQuickRecommendations();
-        }
-      } catch (e) {
-        _handleError('Failed to clear data', e);
-      }
-    }
-  }
-
-  Future<bool> _showConfirmDialog(String message) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Confirm'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Confirm'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (isLoading || currentUser == null) {
-      return _buildLoadingScreen();
-    }
-
-    final targetCalories = currentUser!.calculateTDEE();
-    final nutritionSummary = todayNutritionSummary;
-
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadTodayFoodRecords();
-          _loadQuickRecommendations();
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            _buildWelcomeCard(),
-            const SizedBox(height: 16),
-            _buildTodayGoalCard(targetCalories),
-            const SizedBox(height: 20),
-            _buildCalorieProgressCard(targetCalories),
-            const SizedBox(height: 20),
-            _buildQuickStatsCard(targetCalories, nutritionSummary),
-            const SizedBox(height: 20),
-
-            // Smart recommendation card
-            _buildQuickRecommendationCard(),
-            const SizedBox(height: 20),
-
-            if (todayFoodRecords.isNotEmpty) ...[
-              _buildTodayFoodCard(),
-              const SizedBox(height: 20),
-            ],
-            _buildQuickActionsCard(),
-            const SizedBox(height: 20),
-            _buildSettingsCard(),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToAddFood,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Food'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildLoadingScreen() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calorie Tracker'),
+        title: Text('Calorie Tracker Pro'),
         backgroundColor: Colors.blue.shade50,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.track_changes),
+            onPressed: () => _navigateToHealthGoals(),
+          ),
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () => _showProfileOptions(),
+          ),
+        ],
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Loading data...'),
-          ],
-        ),
+      body: RefreshIndicator(
+        onRefresh: _loadAllData,
+        child: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeCard(),
+                    SizedBox(height: 20),
+                    _buildCalorieProgress(),
+                    SizedBox(height: 20),
+                    _buildServicesStatus(),
+                    SizedBox(height: 20),
+                    if (recommendations.isNotEmpty) _buildRecommendations(),
+                    if (recommendations.isNotEmpty) SizedBox(height: 20),
+                    _buildQuickAccessSection(),
+                    SizedBox(height: 20),
+                    _buildRecentMeals(),
+                  ],
+                ),
+              ),
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: const Text('Calorie Tracker'),
-      backgroundColor: Colors.blue.shade50,
-      elevation: 0,
-      actions: [
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) async {
-            switch (value) {
-              case 'stats':
-                final stats = await DatabaseService.getDatabaseStats();
-                _showInfoMessage(
-                    'Data Statistics: ${stats['foodRecords']} records');
-                break;
-              case 'clear':
-                await _clearAllData();
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'stats',
-              child: Row(
-                children: [
-                  Icon(Icons.bar_chart, size: 20),
-                  SizedBox(width: 8),
-                  Text('Data Statistics'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'clear',
-              child: Row(
-                children: [
-                  Icon(Icons.delete_sweep, size: 20),
-                  SizedBox(width: 8),
-                  Text('Clear Data'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
   Widget _buildWelcomeCard() {
     return Card(
-      elevation: 2,
+      elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade50, Colors.blue.shade100],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade400, Colors.blue.shade600],
+          ),
         ),
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 35,
-              backgroundColor: Colors.blue.shade200,
-              child: Text(
-                currentUser!.name.isNotEmpty
-                    ? currentUser!.name[0].toUpperCase()
-                    : 'U',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hello, ${currentUser!.name}!',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade800,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${currentUser!.age} years • ${currentUser!.gender == 'male' ? 'Male' : 'Female'} • ${currentUser!.height.round()}cm • ${currentUser!.weight.round()}kg',
-                    style: TextStyle(
-                      color: Colors.blue.shade600,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    CalorieCalculatorService.getActivityLevelDescription(
-                        currentUser!.activityLevel),
-                    style: TextStyle(
-                      color: Colors.blue.shade500,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: _navigateToSettings,
-              icon: Icon(Icons.settings, color: Colors.blue.shade600),
-              tooltip: 'Settings',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTodayGoalCard(double targetCalories) {
-    final now = DateTime.now();
-    final timeOfDay = now.hour < 12
-        ? 'Good morning'
-        : (now.hour < 18 ? 'Good afternoon' : 'Good evening');
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _getTimeIcon(now.hour),
-                color: Colors.orange.shade700,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$timeOfDay! Today\'s Goal',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Let\'s start recording today\'s diet, goal: ${targetCalories.round()} kcal',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getTimeIcon(int hour) {
-    if (hour < 12) return Icons.wb_sunny;
-    if (hour < 18) return Icons.wb_sunny_outlined;
-    return Icons.nightlight_round;
-  }
-
-  Widget _buildCalorieProgressCard(double targetCalories) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Icon(Icons.restaurant_menu, color: Colors.white, size: 28),
+            SizedBox(height: 12),
             Text(
-              'Today\'s Calorie Progress',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+              widget.userProfile != null
+                  ? 'Hello, ${widget.userProfile!.name}!'
+                  : 'Welcome to Calorie Tracker Pro',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              widget.userProfile != null
+                  ? 'Your AI-powered nutrition companion'
+                  : 'Create a profile to unlock personalized features',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalorieProgress() {
+    final targetCalories = widget.userProfile?.calculateTDEE() ?? 2000;
+    final progress = (todayCalories / targetCalories).clamp(0.0, 1.0);
+    final remaining =
+        (targetCalories - todayCalories).clamp(0.0, double.infinity);
+
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Today\'s Progress',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                if (widget.userProfile != null)
+                  Text(
+                    'TDEE: ${targetCalories.round()}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
+              ],
             ),
-            const SizedBox(height: 20),
-            CircularCalorieProgress(
-              currentCalories: currentCalorieIntake,
-              targetCalories: targetCalories,
-              size: 220,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickRecommendationCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '🤖 AI Recommendations',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (_isLoadingRecommendations)
-              const Center(child: CircularProgressIndicator())
-            else if (_quickRecommendations.isNotEmpty)
-              ...(_quickRecommendations.map((food) => ListTile(
-                    title: Text(food),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () => _quickAddRecommendedFood(food),
+            SizedBox(height: 16),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 10,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 1.0 ? Colors.green : Colors.blue,
                     ),
-                  )))
-            else
-              const Text('No recommendations available'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStatsCard(
-      double targetCalories, Map<String, double> nutrition) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Today\'s Overview',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text('Target: ${targetCalories.round()} kcal'),
-            Text('Consumed: ${currentCalorieIntake.round()} kcal'),
-            Text('Food items: ${todayFoodRecords.length}'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTodayFoodCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Today\'s Food Records',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            ...todayFoodRecords.asMap().entries.map((entry) {
-              final index = entry.key;
-              final record = entry.value;
-              return ListTile(
-                title: Text(record.foodItem?.name ?? 'Unknown'),
-                subtitle: Text(
-                    '${record.quantity}${record.foodItem?.unit} • ${_getMealTypeName(record.mealType)}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  ),
+                ),
+                Column(
                   children: [
-                    Text('${record.totalCalories.round()} kcal'),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _removeFoodRecord(index),
+                    Text(
+                      '${todayCalories.round()}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                    Text(
+                      'calories',
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                     ),
                   ],
                 ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionsCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ],
             ),
-            const SizedBox(height: 16),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 2.5,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildActionTile('Add Food', Icons.add_circle, Colors.green,
-                    _navigateToAddFood),
-                _buildActionTile('Quick Add', Icons.flash_on, Colors.orange,
-                    _navigateToQuickAdd),
-                _buildActionTile('Nutrition Analysis', Icons.pie_chart,
-                    Colors.blue, _navigateToNutritionOverview),
-                _buildActionTile('View History', Icons.history, Colors.purple,
-                    _navigateToHistory),
-                // Health Goals as a separate feature
-                _buildActionTile('Health Goals', Icons.flag, Colors.teal,
-                    _navigateToHealthGoals),
-                _buildActionTile('Personal Settings', Icons.person, Colors.grey,
-                    _navigateToSettings),
+                _buildProgressStat(
+                    'Target', '${targetCalories.round()}', Colors.blue),
+                _buildProgressStat('Remaining', '${remaining.round()}',
+                    remaining > 0 ? Colors.orange : Colors.green),
+                _buildProgressStat('Progress', '${(progress * 100).round()}%',
+                    progress >= 1.0 ? Colors.green : Colors.blue),
               ],
             ),
           ],
@@ -843,38 +500,64 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSettingsCard() {
+  Widget _buildProgressStat(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServicesStatus() {
+    final aiStatus = AIFoodRecognitionService.getStatus();
+    final isAIReady = AIFoodRecognitionService.isInitialized;
+    final foodDbCount = FoodDatabaseService.getAllFoods().length;
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Features & Tools',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'Service Status',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.flag, color: Colors.teal),
-              title: const Text('Health Goals'),
-              subtitle: const Text('Set and track your health objectives'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _navigateToHealthGoals,
+            SizedBox(height: 12),
+            _buildServiceStatusRow(
+              'AI Recognition',
+              isAIReady
+                  ? (aiStatus['has_real_model']
+                      ? 'EfficientNet Model'
+                      : 'Simulation Mode')
+                  : 'Service Unavailable',
+              isAIReady
+                  ? (aiStatus['has_real_model'] ? Colors.green : Colors.orange)
+                  : Colors.red,
+              Icons.smart_toy,
             ),
-            ListTile(
-              leading: const Icon(Icons.pie_chart, color: Colors.blue),
-              title: const Text('Nutrition Analysis'),
-              subtitle: const Text('Detailed nutrition breakdown and insights'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _navigateToNutritionOverview,
+            _buildServiceStatusRow(
+              'Food Database',
+              '$foodDbCount foods available',
+              Colors.blue,
+              Icons.restaurant,
             ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.purple),
-              title: const Text('History & Trends'),
-              subtitle: const Text('View your progress over time'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _navigateToHistory,
+            _buildServiceStatusRow(
+              'Recommendations',
+              widget.userProfile != null ? 'Personalized' : 'Create profile',
+              widget.userProfile != null ? Colors.green : Colors.grey,
+              Icons.lightbulb,
             ),
           ],
         ),
@@ -882,50 +565,563 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionTile(
-      String label, IconData icon, Color color, VoidCallback onTap) {
-    return Material(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: color.withOpacity(0.8),
-                  ),
+  Widget _buildServiceStatusRow(
+      String title, String status, Color color, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                 ),
-              ),
-            ],
+                Text(
+                  status,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
           ),
+          Icon(
+            color == Colors.green
+                ? Icons.check_circle
+                : color == Colors.orange
+                    ? Icons.warning
+                    : Icons.info,
+            color: color,
+            size: 16,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendations() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lightbulb, color: Colors.orange, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'AI Recommendations',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: recommendations
+                  .map((food) => Chip(
+                        label: Text(food, style: TextStyle(fontSize: 12)),
+                        backgroundColor: Colors.orange.shade50,
+                        side: BorderSide(color: Colors.orange.shade200),
+                      ))
+                  .toList(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // Helper methods
-  String _getMealTypeName(String mealType) {
+  Widget _buildQuickAccessSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Access',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            if (favorites.isNotEmpty)
+              Expanded(
+                  child: _buildQuickAccessCard(
+                      'Favorites', favorites, Icons.favorite, Colors.red)),
+            if (favorites.isNotEmpty && recentFoods.isNotEmpty)
+              SizedBox(width: 12),
+            if (recentFoods.isNotEmpty)
+              Expanded(
+                  child: _buildQuickAccessCard(
+                      'Recent', recentFoods, Icons.history, Colors.blue)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessCard(
+      String title, List<String> foods, IconData icon, Color color) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            ...foods.take(3).map((food) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    food,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )),
+            if (foods.length > 3)
+              Text(
+                '+${foods.length - 3} more...',
+                style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentMeals() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Meals',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                if (todayRecords.isNotEmpty)
+                  TextButton(
+                    onPressed: () => _navigateToHistory(),
+                    child: Text('View All'),
+                  ),
+              ],
+            ),
+            SizedBox(height: 8),
+            if (todayRecords.isEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.restaurant_menu,
+                          size: 48, color: Colors.grey[400]),
+                      SizedBox(height: 8),
+                      Text(
+                        'No meals logged today',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      Text(
+                        'Tap + to add your first meal',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...todayRecords.take(3).map((record) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          _getMealColor(record.mealType).withOpacity(0.1),
+                      child: Icon(_getMealIcon(record.mealType),
+                          color: _getMealColor(record.mealType)),
+                    ),
+                    title: Text(record.foodItem?.name ?? 'Unknown Food'),
+                    subtitle: Text(
+                        '${record.mealType.toUpperCase()} • ${record.quantity}g'),
+                    trailing: Text(
+                      '${record.totalCalories.round()} cal',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getMealColor(String mealType) {
     switch (mealType) {
       case 'breakfast':
-        return 'Breakfast';
+        return Colors.orange;
       case 'lunch':
-        return 'Lunch';
+        return Colors.green;
       case 'dinner':
-        return 'Dinner';
+        return Colors.blue;
       case 'snack':
-        return 'Snack';
+        return Colors.purple;
       default:
-        return 'Unknown';
+        return Colors.grey;
     }
+  }
+
+  IconData _getMealIcon(String mealType) {
+    switch (mealType) {
+      case 'breakfast':
+        return Icons.wb_sunny;
+      case 'lunch':
+        return Icons.wb_sunny_outlined;
+      case 'dinner':
+        return Icons.nights_stay;
+      case 'snack':
+        return Icons.cookie;
+      default:
+        return Icons.restaurant;
+    }
+  }
+
+  void _navigateToHealthGoals() {
+    if (widget.userProfile != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              HealthGoalsScreen(userProfile: widget.userProfile!),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please create a profile first'),
+          action: SnackBarAction(
+            label: 'Create',
+            onPressed: () => _showProfileDialog(),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _navigateToHistory() {
+    final mainScreen =
+        context.findAncestorStateOfType<_MainNavigationScreenState>();
+    if (mainScreen != null) {
+      mainScreen.setState(() {
+        mainScreen._selectedIndex = 4;
+      });
+    }
+  }
+
+  void _showProfileOptions() {
+    if (widget.userProfile != null) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => Container(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text('View Profile'),
+                subtitle: Text(widget.userProfile!.name),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showProfileDialog();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.pie_chart),
+                title: Text('Nutrition Overview'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => NutritionOverviewScreen(
+                        userProfile: widget.userProfile!,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      _showProfileDialog();
+    }
+  }
+
+  void _showProfileDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleProfileDialog(
+        existingProfile: widget.userProfile,
+        onProfileSaved: (profile) {
+          widget.onProfileUpdate();
+          _loadAllData();
+        },
+      ),
+    );
+  }
+}
+
+// 简化的用户配置对话框
+class SimpleProfileDialog extends StatefulWidget {
+  final UserProfile? existingProfile;
+  final Function(UserProfile) onProfileSaved;
+
+  const SimpleProfileDialog({
+    Key? key,
+    this.existingProfile,
+    required this.onProfileSaved,
+  }) : super(key: key);
+
+  @override
+  State<SimpleProfileDialog> createState() => _SimpleProfileDialogState();
+}
+
+class _SimpleProfileDialogState extends State<SimpleProfileDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
+  String _selectedGender = 'male';
+  String _selectedActivityLevel = 'moderate';
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingProfile != null) {
+      _loadExistingProfile();
+    }
+  }
+
+  void _loadExistingProfile() {
+    final profile = widget.existingProfile!;
+    _nameController.text = profile.name;
+    _ageController.text = profile.age.toString();
+    _heightController.text = profile.height.toString();
+    _weightController.text = profile.weight.toString();
+    _selectedGender = profile.gender;
+    _selectedActivityLevel = profile.activityLevel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+          widget.existingProfile != null ? 'Edit Profile' : 'Create Profile'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _ageController,
+                      decoration: InputDecoration(labelText: 'Age'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        final age = int.tryParse(value);
+                        if (age == null || age < 10 || age > 120) {
+                          return 'Invalid age';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedGender,
+                      decoration: InputDecoration(labelText: 'Gender'),
+                      items: [
+                        DropdownMenuItem(value: 'male', child: Text('Male')),
+                        DropdownMenuItem(
+                            value: 'female', child: Text('Female')),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => _selectedGender = value!),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _heightController,
+                      decoration: InputDecoration(labelText: 'Height (cm)'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        final height = double.tryParse(value);
+                        if (height == null || height < 100 || height > 250) {
+                          return 'Invalid';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _weightController,
+                      decoration: InputDecoration(labelText: 'Weight (kg)'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        final weight = double.tryParse(value);
+                        if (weight == null || weight < 30 || weight > 300) {
+                          return 'Invalid';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedActivityLevel,
+                decoration: InputDecoration(labelText: 'Activity Level'),
+                items: [
+                  DropdownMenuItem(
+                      value: 'sedentary', child: Text('Sedentary')),
+                  DropdownMenuItem(value: 'light', child: Text('Light')),
+                  DropdownMenuItem(value: 'moderate', child: Text('Moderate')),
+                  DropdownMenuItem(value: 'active', child: Text('Active')),
+                  DropdownMenuItem(
+                      value: 'very_active', child: Text('Very Active')),
+                ],
+                onChanged: (value) =>
+                    setState(() => _selectedActivityLevel = value!),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _saveProfile,
+          child: _isLoading
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text('Save'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final profile = UserProfile(
+        id: widget.existingProfile?.id,
+        name: _nameController.text.trim(),
+        age: int.parse(_ageController.text),
+        gender: _selectedGender,
+        height: double.parse(_heightController.text),
+        weight: double.parse(_weightController.text),
+        activityLevel: _selectedActivityLevel,
+        createdAt: widget.existingProfile?.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // 使用正确的数据库方法
+      await DatabaseService.saveUserProfile(profile);
+
+      if (mounted) {
+        widget.onProfileSaved(profile);
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Profile ${widget.existingProfile != null ? 'updated' : 'created'} successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error saving profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save profile: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
+    super.dispose();
   }
 }

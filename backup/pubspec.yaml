@@ -1,0 +1,50 @@
+# pubspec.yaml - 保持您的 TensorFlow Lite 模型，但使用兼容版本
+
+name: calorie_tracker_app
+description: "AI-powered calorie tracking application"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Core dependencies
+  cupertino_icons: ^1.0.6
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # Camera and image processing
+  camera: ^0.10.5+9
+  image_picker: ^1.0.7
+  image: ^4.1.7
+  
+  # TensorFlow Lite - 使用与Java 17兼容的版本
+  tflite_flutter: ^0.10.4  # 替代有问题的 0.9.5
+  
+  # UI and charts
+  fl_chart: ^0.66.2
+  
+  # Permissions
+  permission_handler: ^11.3.0
+  
+  # Storage
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # 确保您的模型文件被正确包含
+  assets:
+    - assets/models/efficientnet_config.json
+    - assets/models/efficientnet_food_model.tflite
+    - assets/models/food_labels.txt
